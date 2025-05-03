@@ -15,8 +15,8 @@ type Postgres struct {
 	Database           string        `yaml:"Database"`
 	User               string        `yaml:"User"`
 	Password           string        `yaml:"Password"`
-	MinConnections     int           `yaml:"MinConnections"`
-	MaxConnections     int           `yaml:"MaxConnections"`
+	MinConnections     int32         `yaml:"MinConnections"`
+	MaxConnections     int32         `yaml:"MaxConnections"`
 	IdleConnection     time.Duration `yaml:"IdleConnection"`
 	LifeTimeConnection time.Duration `yaml:"LifeTimeConnection"`
 	JitterConnection   time.Duration `yaml:"JitterConnection"`

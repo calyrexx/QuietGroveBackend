@@ -1,20 +1,16 @@
 package postgresdb
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
-	"log"
-	"math"
 	"os"
-	"strings"
 )
 
 const (
-	filePath = "deploy/postgresddl.sql"
+	filePath = "deploy/postgres.sql"
 )
 
 func NewPostgres(ctx context.Context, c configuration.Postgres) (*pgxpool.Pool, error) {
@@ -26,17 +22,8 @@ func NewPostgres(ctx context.Context, c configuration.Postgres) (*pgxpool.Pool, 
 		return nil, err
 	}
 
-	if c.MinConnections < math.MinInt32 || c.MinConnections > math.MaxInt32 {
-		return nil, fmt.Errorf("MinConnections value %d is out of range for int32", c.MinConnections)
-	}
-
-	if c.MaxConnections < math.MinInt32 || c.MaxConnections > math.MaxInt32 {
-		return nil, fmt.Errorf("MaxConnections value %d is out of range for int32", c.MaxConnections)
-	}
-
-	// nolint:gosec // выше проверена возможность переполнения
-	config.MinConns = int32(c.MinConnections)
-	config.MaxConns = int32(c.MaxConnections)
+	config.MinConns = c.MinConnections
+	config.MaxConns = c.MaxConnections
 	config.MaxConnIdleTime = c.IdleConnection
 	config.MaxConnLifetime = c.LifeTimeConnection
 	config.MaxConnLifetimeJitter = c.JitterConnection
@@ -59,38 +46,21 @@ func NewPostgres(ctx context.Context, c configuration.Postgres) (*pgxpool.Pool, 
 	return pool, nil
 }
 
-func InitDbInst(ctx context.Context, c *pgxpool.Pool) error {
+func InitDbInst(ctx context.Context, pool *pgxpool.Pool) error {
 
-	file, err := os.Open(filePath)
+	sqlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
-
-	// Чтение и выполнение запросов построчно
-	scanner := bufio.NewScanner(file)
-	var queryBuilder strings.Builder
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.TrimSpace(line) == "" {
-			continue
-		}
-		queryBuilder.WriteString(line + "\n")
-		if strings.HasSuffix(line, ";") {
-			query := queryBuilder.String()
-			_, err := c.Exec(ctx, query)
-			if err != nil {
-				log.Fatalf("Error executing query: %v\nQuery: %s", err, query)
-			}
-			queryBuilder.Reset()
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
 		return err
 	}
+	defer conn.Release()
 
-	return nil
+	mrr := conn.Conn().PgConn().Exec(ctx, string(sqlBytes))
+	_, err = mrr.ReadAll()
+
+	return err
 }
