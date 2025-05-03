@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:17
     container_name: quiet_groove
-    restart: always
+    restart: no
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password

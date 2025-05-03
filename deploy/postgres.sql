@@ -1,42 +1,53 @@
 ------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE EXTENSION IF NOT EXISTS citext;
 ------------------------------------------------------------
 -- Дома
-CREATE TABLE houses (
-   id smallserial PRIMARY KEY,
-   name text NOT NULL,
-   slug text NOT NULL UNIQUE,
-   capacity smallint NOT NULL CHECK (capacity > 0),
-   base_price numeric(10,2) NOT NULL CHECK (base_price >= 0),
-   description text,
-   created_at timestamptz NOT NULL DEFAULT now(),
-   updated_at timestamptz NOT NULL DEFAULT now()
+CREATE TABLE IF NOT EXISTS houses (
+    id smallserial PRIMARY KEY,
+    name text NOT NULL,
+    capacity smallint NOT NULL CHECK (capacity > 0),
+    base_price numeric(10,2) NOT NULL CHECK (base_price >= 0),
+    description text,
+    images text[] NOT NULL DEFAULT '{}'::text[],
+    check_in_from time NOT NULL DEFAULT '14:00',
+    check_out_until time NOT NULL DEFAULT '11:00',
+    CHECK (check_out_until > check_in_from),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
 ------------------------------------------------------------
 -- Гости
-CREATE TABLE guests (
-   id bigserial PRIMARY KEY,
-   first_name text NOT NULL,
-   last_name text NOT NULL,
-   email citext NOT NULL UNIQUE,
-   phone text,
-   created_at timestamptz NOT NULL DEFAULT now()
+CREATE TABLE IF NOT EXISTS guests (
+    id uuid PRIMARY KEY,
+    name text NOT NULL,
+    email citext UNIQUE,
+    phone text,
+    created_at timestamptz NOT NULL DEFAULT now()
 );
 ------------------------------------------------------------
 -- Статусы
-CREATE TYPE reservation_status AS ENUM (
-    'pending','confirmed','checked_in','checked_out','cancelled'
-);
+DO $$
+    BEGIN
+        CREATE TYPE reservation_status AS ENUM
+            ('pending','confirmed','checked_in','checked_out','cancelled');
+    EXCEPTION
+        WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE payment_status AS ENUM (
-    'pending','paid','failed','refunded'
-);
+DO $$
+    BEGIN
+        CREATE TYPE payment_status AS ENUM
+            ('pending','paid','failed','refunded');
+    EXCEPTION
+        WHEN duplicate_object THEN NULL;
+END $$;
 ------------------------------------------------------------
 -- Брони
-CREATE TABLE reservations (
-    id bigserial PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS reservations (
+    id uuid PRIMARY KEY,
     house_id smallint REFERENCES houses ON DELETE CASCADE,
-    guest_id bigint REFERENCES guests ON DELETE RESTRICT,
+    guest_id uuid REFERENCES guests ON DELETE RESTRICT,
     stay daterange NOT NULL, -- диапазон дат заезда ([))
     guests_count smallint  NOT NULL CHECK (guests_count > 0),
     status reservation_status NOT NULL DEFAULT 'pending',
@@ -51,7 +62,7 @@ CREATE TABLE reservations (
 );
 ------------------------------------------------------------
 -- Платежи
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
     id bigserial PRIMARY KEY,
     reservation_id bigint REFERENCES reservations ON DELETE CASCADE,
     amount numeric(10,2) NOT NULL,
@@ -63,32 +74,36 @@ CREATE TABLE payments (
 );
 ------------------------------------------------------------
 -- Доп. услуги
-CREATE TABLE extras (
-    id serial PRIMARY KEY,
-    code text UNIQUE,
+CREATE TABLE IF NOT EXISTS extras (
+    id smallserial PRIMARY KEY,
     name text NOT NULL,
+    description text NOT NULL,
+    image text NOT NULL,
     price numeric(10,2) NOT NULL
 );
 
-CREATE TABLE reservation_extras (
-    reservation_id bigint REFERENCES reservations ON DELETE CASCADE,
-    extra_id int  REFERENCES extras ON DELETE RESTRICT,
+CREATE TABLE IF NOT EXISTS reservation_extras (
+    reservation_id uuid REFERENCES reservations ON DELETE CASCADE,
+    extra_id int REFERENCES extras ON DELETE RESTRICT,
     quantity smallint NOT NULL DEFAULT 1,
     amount numeric(10,2) NOT NULL,
     PRIMARY KEY (reservation_id, extra_id)
 );
 ------------------------------------------------------------
 -- Блокировка дат (ремонт, частное пользование)
-CREATE TABLE blackouts (
+CREATE TABLE IF NOT EXISTS blackouts (
     id serial PRIMARY KEY,
     house_id smallint REFERENCES houses ON DELETE CASCADE,
     period daterange NOT NULL,
     reason text,
     CONSTRAINT no_overlap_blackout
-    EXCLUDE USING gist (house_id WITH =, period WITH &&)
+    EXCLUDE USING gist (
+        house_id WITH =,
+        period WITH &&
+    )
 );
 ------------------------------------------------------------
-CREATE INDEX reservations_active_idx
+CREATE INDEX IF NOT EXISTS reservations_active_idx
     ON reservations
     USING gist (house_id, stay);
 ------------------------------------------------------------
