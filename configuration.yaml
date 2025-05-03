@@ -1,0 +1,15 @@
+Logger:
+  # Уровень выводимых в консоль сообщений [0 - PanicLevel, 1 - FatalLevel, 2 - ErrorLevel, 3 - WarnLevel, 4 - InfoLevel, 5 - DebugLevel, 6 - TraceLevel]
+  Level: 6
+
+# =======================
+#   WebServer settings
+# =======================
+HttpServer:
+  Port: 8080
+  ReadTimeout: 10s
+  ReadHeaderTimeout: 500ms
+  WriteTimeout: 10s
+  IdleTimeout: 1s
+  MaxHeaderBytes: 500
+  ShutdownTimeout: 5s

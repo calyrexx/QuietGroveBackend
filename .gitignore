@@ -1,0 +1,24 @@
+.idea
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+# creds
+credentials.yaml
+
+# Makefile outputs
+mocks.log
+lint.log
+test_output.log
