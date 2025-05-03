@@ -7,6 +7,7 @@ import (
 
 type Controllers struct {
 	Reservations *controllers.Reservations
+	Houses       *controllers.Houses
 }
 
 func NewControllers(
@@ -18,10 +19,18 @@ func NewControllers(
 		UseCase: usecases.reservations,
 	})
 	if err != nil {
-		logger.Fatalf("controllers.NewReservations init error: %v", err)
+		return nil, err
+	}
+
+	housesController, err := controllers.NewHouses(&controllers.HousesDependencies{
+		UseCase: usecases.houses,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &Controllers{
 		Reservations: reservationsController,
+		Houses:       housesController,
 	}, nil
 }
