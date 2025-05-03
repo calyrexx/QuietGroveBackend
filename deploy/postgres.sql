@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS houses (
 ------------------------------------------------------------
 -- Гости
 CREATE TABLE IF NOT EXISTS guests (
-    id uuid PRIMARY KEY,
+    uuid uuid PRIMARY KEY,
     name text NOT NULL,
     email citext UNIQUE,
     phone text,
@@ -45,9 +45,9 @@ END $$;
 ------------------------------------------------------------
 -- Брони
 CREATE TABLE IF NOT EXISTS reservations (
-    id uuid PRIMARY KEY,
+    uuid uuid PRIMARY KEY,
     house_id smallint REFERENCES houses ON DELETE CASCADE,
-    guest_id uuid REFERENCES guests ON DELETE RESTRICT,
+    guest_uuid uuid REFERENCES guests ON DELETE RESTRICT,
     stay daterange NOT NULL, -- диапазон дат заезда ([))
     guests_count smallint  NOT NULL CHECK (guests_count > 0),
     status reservation_status NOT NULL DEFAULT 'pending',
@@ -63,8 +63,8 @@ CREATE TABLE IF NOT EXISTS reservations (
 ------------------------------------------------------------
 -- Платежи
 CREATE TABLE IF NOT EXISTS payments (
-    id bigserial PRIMARY KEY,
-    reservation_id bigint REFERENCES reservations ON DELETE CASCADE,
+    uuid uuid PRIMARY KEY,
+    reservation_uuid uuid REFERENCES reservations ON DELETE CASCADE,
     amount numeric(10,2) NOT NULL,
     currency char(3) DEFAULT 'RUB',
     method text,
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS extras (
 );
 
 CREATE TABLE IF NOT EXISTS reservation_extras (
-    reservation_id uuid REFERENCES reservations ON DELETE CASCADE,
+    reservation_uuid uuid REFERENCES reservations ON DELETE CASCADE,
     extra_id int REFERENCES extras ON DELETE RESTRICT,
     quantity smallint NOT NULL DEFAULT 1,
     amount numeric(10,2) NOT NULL,
