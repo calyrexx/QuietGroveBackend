@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS reservation_extras (
     extra_id int REFERENCES extras ON DELETE RESTRICT,
     quantity smallint NOT NULL DEFAULT 1,
     amount numeric(10,2) NOT NULL,
-    PRIMARY KEY (reservation_id, extra_id)
+    PRIMARY KEY (reservation_uuid, extra_id)
 );
 ------------------------------------------------------------
 -- Блокировка дат (ремонт, частное пользование)

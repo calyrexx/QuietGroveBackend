@@ -33,12 +33,6 @@ type ErrConstructorDependencies struct {
 	state       string
 }
 
-type ErrInvalidInterval uint8
-
-func (e ErrInvalidInterval) Error() string {
-	return fmt.Sprintf("invalid interval [%d]", e)
-}
-
 func (err ErrConstructorDependencies) Error() string {
 	return fmt.Sprintf("constructor [%s] got not correct dependency [%s] is [%s]", err.constructor, err.dependency, err.state)
 }
@@ -47,31 +41,38 @@ func NewErrConstructorDependencies(constructor, dependency, state string) error 
 	return ErrConstructorDependencies{constructor: constructor, dependency: dependency, state: state}
 }
 
-type ErrSomethingIsEmpty string
-
-func (e ErrSomethingIsEmpty) Error() string {
-	return fmt.Sprintf("[%s] is empty", string(e))
+type ErrRepoFailed struct {
+	operation string
+	method    string
+	errorMsg  error
 }
 
-type ErrUnitIsNil struct {
-	unit string
+func (err ErrRepoFailed) Error() string {
+	return fmt.Sprintf("operation [%s] in method [%s] failed: %s", err.operation, err.method, err.errorMsg)
 }
 
-func (err ErrUnitIsNil) Error() string {
-	return fmt.Sprintf("is nil: %s", err.unit)
-}
-func NewErrUnitIsNil(unit string) error {
-	return ErrUnitIsNil{unit: unit}
-}
-
-type ErrCronFunc struct {
-	err error
+func NewErrRepoFailed(operation, method string, err error) error {
+	return &ErrRepoFailed{
+		operation: operation,
+		method:    method,
+		errorMsg:  err,
+	}
 }
 
-func (e ErrCronFunc) Error() string {
-	return fmt.Sprintf("CronFunc - error: %s", e.err)
+type ErrRepoNotFound struct {
+	unit   string
+	id     string
+	method string
 }
 
-func NewErrCronFunc(err error) error {
-	return ErrCronFunc{err: err}
+func (err ErrRepoNotFound) Error() string {
+	return fmt.Sprintf("[%s] with id [%s] in method [%s] not found", err.unit, err.id, err.method)
+}
+
+func NewErrRepoNotFound(unit, id, method string) error {
+	return &ErrRepoNotFound{
+		unit:   unit,
+		id:     id,
+		method: method,
+	}
 }

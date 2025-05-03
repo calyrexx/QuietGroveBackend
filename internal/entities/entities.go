@@ -7,14 +7,16 @@ import (
 )
 
 type House struct {
-	ID          uint
-	Name        string
-	Description string
-	Capacity    uint
-	BasePrice   int
-	Images      []string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID            int
+	Name          string
+	Description   string
+	Capacity      int
+	BasePrice     int
+	Images        []string
+	CheckInFrom   time.Time
+	CheckOutUntil time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type Guest struct {
@@ -27,10 +29,10 @@ type Guest struct {
 
 type Reservation struct {
 	UUID        uuid.UUID
-	HouseID     uint
+	HouseID     int
 	GuestUUID   uuid.UUID
 	Stay        pgtype.Range[pgtype.Date] // [checkIn, checkOut)
-	GuestsCount uint
+	GuestsCount int
 	Status      string // enum ReservationStatus
 	TotalPrice  int
 	CreatedAt   time.Time
@@ -40,8 +42,8 @@ type Reservation struct {
 
 type ReservationExtra struct {
 	ExtraID  int
-	Quantity uint
-	Amount   uint
+	Quantity int
+	Amount   int
 }
 
 type Payment struct {
