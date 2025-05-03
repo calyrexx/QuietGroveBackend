@@ -30,7 +30,7 @@ func New(
 		return nil, errorspkg.NewErrConstructorDependencies("App", "Credentials", "nil")
 	}
 
-	repo, err := NewRepo(ctx, version, creds)
+	repo, err := NewRepo(ctx, creds)
 	if err != nil {
 		return nil, err
 	}
