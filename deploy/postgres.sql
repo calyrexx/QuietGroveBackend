@@ -4,15 +4,14 @@ CREATE EXTENSION IF NOT EXISTS citext;
 ------------------------------------------------------------
 -- Дома
 CREATE TABLE IF NOT EXISTS houses (
-    id smallserial PRIMARY KEY,
+    id smallint PRIMARY KEY,
     name text NOT NULL,
     capacity smallint NOT NULL CHECK (capacity > 0),
     base_price numeric(10,2) NOT NULL CHECK (base_price >= 0),
     description text,
     images text[] NOT NULL DEFAULT '{}'::text[],
-    check_in_from time NOT NULL DEFAULT '14:00',
-    check_out_until time NOT NULL DEFAULT '11:00',
-    CHECK (check_out_until > check_in_from),
+    check_in_from text NOT NULL DEFAULT '14:00',
+    check_out_until text NOT NULL DEFAULT '11:00',
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -75,7 +74,7 @@ CREATE TABLE IF NOT EXISTS payments (
 ------------------------------------------------------------
 -- Доп. услуги
 CREATE TABLE IF NOT EXISTS extras (
-    id smallserial PRIMARY KEY,
+    id smallint PRIMARY KEY,
     name text NOT NULL,
     description text NOT NULL,
     image text NOT NULL,

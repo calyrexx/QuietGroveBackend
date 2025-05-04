@@ -13,18 +13,15 @@ type House struct {
 	Capacity      int
 	BasePrice     int
 	Images        []string
-	CheckInFrom   time.Time
-	CheckOutUntil time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	CheckInFrom   string
+	CheckOutUntil string
 }
 
 type Guest struct {
-	UUID      uuid.UUID
-	Name      string
-	Email     string
-	Phone     string
-	CreatedAt time.Time
+	UUID  uuid.UUID
+	Name  string
+	Email string
+	Phone string
 }
 
 type Reservation struct {

@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/sirupsen/logrus"
@@ -9,8 +11,8 @@ import (
 )
 
 type IHousesControllers interface {
-	GetAll(ctx context.Context) ([]entities.House, error)
-	Add(ctx context.Context, house entities.House) error
+	GetAll(ctx context.Context) ([]House, error)
+	Add(ctx context.Context, house House) error
 	Update(ctx context.Context, house entities.House) error
 	Delete(ctx context.Context, houseID int) error
 }
@@ -42,17 +44,82 @@ func NewHouses(dep HousesDependencies) (*Houses, error) {
 }
 
 func (h *Houses) GetAll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	houses, err := h.controller.GetAll(ctx)
+	if err != nil {
+		h.logger.Errorf("get all: %v", err)
+		api.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	api.WriteJSON(w, http.StatusOK, houses)
 }
 
 func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	var req House
+	if err := api.ReadJSON(r, &req); err != nil {
+		api.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.controller.Add(ctx, req); err != nil {
+		h.logger.Errorf("add: %v", err)
+		api.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "house created"})
 }
 
 func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	id, err := api.URLParamInt(r, "id")
+	if err != nil {
+		api.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var req entities.House
+	if err := api.ReadJSON(r, &req); err != nil {
+		api.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.controller.Update(ctx, req); err != nil {
+		status := http.StatusInternalServerError
+		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
+			status = http.StatusNotFound
+		}
+		h.logger.Errorf("update id=%d: %v", id, err)
+		api.WriteError(w, status, err)
+		return
+	}
+
+	api.WriteJSON(w, http.StatusOK, map[string]string{"message": "house updated"})
 }
 
 func (h *Houses) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	id, err := api.URLParamInt(r, "id")
+	if err != nil {
+		api.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.controller.Delete(ctx, int(id)); err != nil {
+		status := http.StatusInternalServerError
+		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
+			status = http.StatusNotFound
+		}
+		h.logger.Errorf("delete id=%d: %v", id, err)
+		api.WriteError(w, status, err)
+		return
+	}
+
+	api.WriteJSON(w, http.StatusNoContent, nil)
 }

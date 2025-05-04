@@ -49,10 +49,14 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r.HandleFunc("/health", dep.Handlers.General.Health)
 	r.HandleFunc("/version", dep.Handlers.General.Version)
 
-	Internal := r.PathPrefix("/internal").Subrouter()
+	reservations := r.PathPrefix("/reservations").Subrouter()
+	reservations.HandleFunc("/house", dep.Handlers.Reservations.BookAHouse).Methods(http.MethodPost)
 
-	weather := Internal.PathPrefix("/reservations").Subrouter()
-	weather.HandleFunc("/house", dep.Handlers.Reservations.BookAHouse).Methods(http.MethodPost)
+	houses := r.PathPrefix("/houses").Subrouter()
+	houses.HandleFunc("", dep.Handlers.Houses.Add).Methods(http.MethodPost)
+	houses.HandleFunc("/{id}", dep.Handlers.Houses.Update).Methods(http.MethodPut)
+	houses.HandleFunc("/{id}", dep.Handlers.Houses.Delete).Methods(http.MethodDelete)
+	houses.HandleFunc("", dep.Handlers.Houses.GetAll).Methods(http.MethodGet)
 
 	return r
 }

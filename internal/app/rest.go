@@ -14,7 +14,7 @@ type Rest struct {
 }
 
 func NewRest(
-	core *Controllers,
+	controllers *Controllers,
 	logger logrus.FieldLogger,
 	config *configuration.HttpServer,
 	version string,
@@ -33,7 +33,7 @@ func NewRest(
 	}
 
 	reservationsHandler, err := handlers.NewReservations(handlers.ReservationsDependencies{
-		Controller: core.Reservations,
+		Controller: controllers.Reservations,
 		Logger:     logger,
 	})
 	if err != nil {
@@ -41,7 +41,7 @@ func NewRest(
 	}
 
 	housesHandler, err := handlers.NewHouses(handlers.HousesDependencies{
-		Controller: core.Houses,
+		Controller: controllers.Houses,
 		Logger:     logger,
 	})
 	if err != nil {

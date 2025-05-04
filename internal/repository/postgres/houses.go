@@ -66,6 +66,7 @@ func (r *HousesRepo) Add(ctx context.Context, house entities.House) error {
 	const method = "housesRepo.Add"
 	query := `
 		INSERT INTO houses (
+		    id,
 			name,
 		    description,
 		                    
@@ -78,18 +79,19 @@ func (r *HousesRepo) Add(ctx context.Context, house entities.House) error {
 			check_out_until
 		)
 		VALUES (
-			$1, $2,
-		    $3, $4,
-		    $5,
-		    $6, $7
+			$1, $2, $3, 
+		    $4, $5,
+		    $6, 
+		    $7, $8
 		)
 	`
 
 	if _, err := r.pool.Exec(ctx, query,
+		house.ID,
 		house.Name,
+		house.Description,
 		house.Capacity,
 		house.BasePrice,
-		house.Description,
 		house.Images,
 		house.CheckInFrom,
 		house.CheckOutUntil,
