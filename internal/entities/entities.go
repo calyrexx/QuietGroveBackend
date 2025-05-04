@@ -43,6 +43,14 @@ type ReservationExtra struct {
 	Amount   int
 }
 
+type Extra struct {
+	ID          int
+	Name        string
+	Description string
+	BasePrice   int
+	Images      []string
+}
+
 type Payment struct {
 	UUID            uuid.UUID
 	ReservationUUID uuid.UUID

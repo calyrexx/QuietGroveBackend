@@ -40,9 +40,21 @@ func (c *Houses) GetAll(ctx context.Context) ([]handlers.House, error) {
 	return c.convertEntitiesToHouses(res), nil
 }
 
-func (c *Houses) convertEntitiesToHouses(enities []entities.House) []handlers.House {
-	res := make([]handlers.House, 0, len(enities))
-	for _, entity := range enities {
+func (c *Houses) Add(ctx context.Context, house handlers.House) error {
+	return c.useCase.Add(ctx, c.convertHouseToEntity(house))
+}
+
+func (c *Houses) Update(ctx context.Context, house entities.House) error {
+	return c.useCase.Update(ctx, house)
+}
+
+func (c *Houses) Delete(ctx context.Context, houseID int) error {
+	return c.useCase.Delete(ctx, houseID)
+}
+
+func (c *Houses) convertEntitiesToHouses(entities []entities.House) []handlers.House {
+	res := make([]handlers.House, 0, len(entities))
+	for _, entity := range entities {
 		res = append(res, c.convertEntityToHouse(entity))
 	}
 	return res
@@ -72,16 +84,4 @@ func (c *Houses) convertHouseToEntity(house handlers.House) entities.House {
 		CheckInFrom:   house.CheckInFrom,
 		CheckOutUntil: house.CheckOutUntil,
 	}
-}
-
-func (c *Houses) Add(ctx context.Context, house handlers.House) error {
-	return c.useCase.Add(ctx, c.convertHouseToEntity(house))
-}
-
-func (c *Houses) Update(ctx context.Context, house entities.House) error {
-	return c.useCase.Update(ctx, house)
-}
-
-func (c *Houses) Delete(ctx context.Context, houseID int) error {
-	return c.useCase.Delete(ctx, houseID)
 }

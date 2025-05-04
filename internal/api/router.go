@@ -6,6 +6,16 @@ import (
 	"net/http"
 )
 
+const (
+	healthPath  = "/health"
+	versionPath = "/version"
+	housesPath  = "/houses"
+	extrasPath  = "/extras"
+	reservePath = "/reserve"
+	idPath      = "/{id}"
+	emptyPath   = ""
+)
+
 type Middlewares struct {
 	PanicRecovery mux.MiddlewareFunc
 }
@@ -21,6 +31,13 @@ type IHouses interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 }
 
+type IExtras interface {
+	GetAll(w http.ResponseWriter, r *http.Request)
+	Add(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+}
+
 type IGeneral interface {
 	Health(w http.ResponseWriter, r *http.Request)
 	Version(w http.ResponseWriter, r *http.Request)
@@ -29,6 +46,7 @@ type IGeneral interface {
 type Handlers struct {
 	Reservations IReservations
 	Houses       IHouses
+	Extras       IExtras
 	General      IGeneral
 }
 
@@ -46,17 +64,23 @@ func NewRouter(dep RouterDependencies) http.Handler {
 		fmt.Println(r.URL)
 	})
 
-	r.HandleFunc("/health", dep.Handlers.General.Health)
-	r.HandleFunc("/version", dep.Handlers.General.Version)
+	r.HandleFunc(healthPath, dep.Handlers.General.Health)
+	r.HandleFunc(versionPath, dep.Handlers.General.Version)
 
-	reservations := r.PathPrefix("/reservations").Subrouter()
+	reservations := r.PathPrefix(reservePath).Subrouter()
 	reservations.HandleFunc("/house", dep.Handlers.Reservations.BookAHouse).Methods(http.MethodPost)
 
-	houses := r.PathPrefix("/houses").Subrouter()
-	houses.HandleFunc("", dep.Handlers.Houses.Add).Methods(http.MethodPost)
-	houses.HandleFunc("/{id}", dep.Handlers.Houses.Update).Methods(http.MethodPut)
-	houses.HandleFunc("/{id}", dep.Handlers.Houses.Delete).Methods(http.MethodDelete)
-	houses.HandleFunc("", dep.Handlers.Houses.GetAll).Methods(http.MethodGet)
+	houses := r.PathPrefix(housesPath).Subrouter()
+	houses.HandleFunc(emptyPath, dep.Handlers.Houses.Add).Methods(http.MethodPost)
+	houses.HandleFunc(idPath, dep.Handlers.Houses.Update).Methods(http.MethodPut)
+	houses.HandleFunc(idPath, dep.Handlers.Houses.Delete).Methods(http.MethodDelete)
+	houses.HandleFunc(emptyPath, dep.Handlers.Houses.GetAll).Methods(http.MethodGet)
+
+	extras := r.PathPrefix(extrasPath).Subrouter()
+	extras.HandleFunc(emptyPath, dep.Handlers.Extras.Add).Methods(http.MethodPost)
+	extras.HandleFunc(idPath, dep.Handlers.Extras.Update).Methods(http.MethodPut)
+	extras.HandleFunc(idPath, dep.Handlers.Extras.Delete).Methods(http.MethodDelete)
+	extras.HandleFunc(emptyPath, dep.Handlers.Extras.GetAll).Methods(http.MethodGet)
 
 	return r
 }

@@ -77,8 +77,10 @@ CREATE TABLE IF NOT EXISTS extras (
     id smallint PRIMARY KEY,
     name text NOT NULL,
     description text NOT NULL,
-    image text NOT NULL,
-    price numeric(10,2) NOT NULL
+    images text[] NOT NULL DEFAULT '{}'::text[],
+    price numeric(10,2) NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS reservation_extras (

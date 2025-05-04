@@ -48,10 +48,19 @@ func NewRest(
 		return nil, err
 	}
 
+	extrasHandler, err := handlers.NewExtras(handlers.ExtrasDependencies{
+		Controller: controllers.Extras,
+		Logger:     logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	router := api.NewRouter(api.RouterDependencies{
 		Handlers: api.Handlers{
 			Reservations: reservationsHandler,
 			Houses:       housesHandler,
+			Extras:       extrasHandler,
 			General:      general,
 		},
 		Middlewares: api.Middlewares{

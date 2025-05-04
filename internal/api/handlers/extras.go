@@ -4,62 +4,61 @@ import (
 	"context"
 	"errors"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-type IHousesControllers interface {
-	GetAll(ctx context.Context) ([]House, error)
-	Add(ctx context.Context, house House) error
-	Update(ctx context.Context, house entities.House) error
-	Delete(ctx context.Context, houseID int) error
+type IExtrasControllers interface {
+	GetAll(ctx context.Context) ([]Extra, error)
+	Add(ctx context.Context, extras Extra) error
+	Update(ctx context.Context, extra Extra) error
+	Delete(ctx context.Context, extraID int) error
 }
 
-type HousesDependencies struct {
-	Controller IHousesControllers
+type ExtrasDependencies struct {
+	Controller IExtrasControllers
 	Logger     logrus.FieldLogger
 }
 
-type Houses struct {
-	controller IHousesControllers
+type Extras struct {
+	controller IExtrasControllers
 	logger     logrus.FieldLogger
 }
 
-func NewHouses(dep HousesDependencies) (*Houses, error) {
+func NewExtras(dep ExtrasDependencies) (*Extras, error) {
 	if dep.Logger == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("NewHouses", "Logger", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies("NewExtras", "Logger", "nil")
 	}
 	if dep.Controller == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("NewHouses", "Controller", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies("NewExtras", "Controller", "nil")
 	}
 
-	logger := dep.Logger.WithField("Handler", "Houses")
+	logger := dep.Logger.WithField("Handler", "Extras")
 
-	return &Houses{
+	return &Extras{
 		controller: dep.Controller,
 		logger:     logger,
 	}, nil
 }
 
-func (h *Houses) GetAll(w http.ResponseWriter, r *http.Request) {
+func (h *Extras) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	houses, err := h.controller.GetAll(ctx)
+	extras, err := h.controller.GetAll(ctx)
 	if err != nil {
 		h.logger.Errorf("get all: %v", err)
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	api.WriteJSON(w, http.StatusOK, houses)
+	api.WriteJSON(w, http.StatusOK, extras)
 }
 
-func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
+func (h *Extras) Add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req House
+	var req Extra
 	if err := api.ReadJSON(r, &req); err != nil {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -74,7 +73,7 @@ func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
 	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "house created"})
 }
 
-func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
+func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := api.URLParamInt(r, "id")
@@ -83,7 +82,7 @@ func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req entities.House
+	var req Extra
 	if err := api.ReadJSON(r, &req); err != nil {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -102,7 +101,7 @@ func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
 	api.WriteJSON(w, http.StatusOK, map[string]string{"message": "house updated"})
 }
 
-func (h *Houses) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *Extras) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id, err := api.URLParamInt(r, "id")
