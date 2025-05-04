@@ -1,14 +1,32 @@
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
+    - bodyclose
     - errcheck
-    - gosimple
+    - gosec
     - govet
     - ineffassign
-    - noctx
     - nilerr
+    - noctx
     - prealloc
-    - gosec
-    - bodyclose
     - staticcheck
     - unused
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

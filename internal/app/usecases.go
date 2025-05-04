@@ -7,6 +7,8 @@ import (
 
 type Usecases struct {
 	reservations *usecases.Reservations
+	houses       *usecases.Houses
+	extras       *usecases.Extras
 }
 
 func NewUsecases(
@@ -22,7 +24,25 @@ func NewUsecases(
 		return nil, err
 	}
 
+	housesUsecase, err := usecases.NewHouses(&usecases.HousesDependencies{
+		Repo:   repo.Houses,
+		Logger: logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	extrasUsecase, err := usecases.NewExtras(&usecases.ExtrasDependencies{
+		Repo:   repo.Extras,
+		Logger: logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &Usecases{
 		reservations: reservationsUsecase,
+		houses:       housesUsecase,
+		extras:       extrasUsecase,
 	}, nil
 }
