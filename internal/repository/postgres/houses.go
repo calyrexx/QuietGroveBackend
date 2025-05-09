@@ -41,7 +41,7 @@ func (r *HousesRepo) GetAll(ctx context.Context) ([]entities.House, error) {
 	var results []entities.House
 	for rows.Next() {
 		var house entities.House
-		if err := rows.Scan(
+		if err = rows.Scan(
 			&house.ID,
 			&house.Name,
 			&house.Description,

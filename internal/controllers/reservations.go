@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
 )
 
 type IReservationsUseCase interface {
-	BookAHouse(ctx context.Context, request string) error
+	CreateReservation(ctx context.Context, req usecases.CreateReservationRequest) (entities.Reservation, error)
 }
 
 type ReservationsDependencies struct {
@@ -26,9 +28,10 @@ func NewReservations(d *ReservationsDependencies) (*Reservations, error) {
 	}, nil
 }
 
-func (c *Reservations) BookAHouse(ctx context.Context, request string) (string, error) {
-	if err := c.useCase.BookAHouse(ctx, request); err != nil {
-		return "", err
+func (c *Reservations) BookAHouse(ctx context.Context, req usecases.CreateReservationRequest) (entities.Reservation, error) {
+	response, err := c.useCase.CreateReservation(ctx, req)
+	if err != nil {
+		return entities.Reservation{}, err
 	}
-	return "ok", nil
+	return response, nil
 }

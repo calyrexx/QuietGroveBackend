@@ -1,6 +1,5 @@
 ------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS btree_gist;
-CREATE EXTENSION IF NOT EXISTS citext;
 ------------------------------------------------------------
 -- Дома
 CREATE TABLE IF NOT EXISTS houses (
@@ -20,7 +19,7 @@ CREATE TABLE IF NOT EXISTS houses (
 CREATE TABLE IF NOT EXISTS guests (
     uuid uuid PRIMARY KEY,
     name text NOT NULL,
-    email citext UNIQUE,
+    email text NOT NULL,
     phone text,
     created_at timestamptz NOT NULL DEFAULT now()
 );
