@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	healthPath  = "/health"
-	versionPath = "/version"
-	housesPath  = "/houses"
-	extrasPath  = "/extras"
-	reservePath = "/reserve"
-	idPath      = "/{id}"
-	emptyPath   = ""
+	healthPath      = "/health"
+	versionPath     = "/version"
+	housesPath      = "/houses"
+	extrasPath      = "/extras"
+	reservationPath = "/reservation"
+	idPath          = "/{id}"
+	emptyPath       = ""
 )
 
 type Middlewares struct {
@@ -21,7 +21,7 @@ type Middlewares struct {
 }
 
 type IReservations interface {
-	BookAHouse(w http.ResponseWriter, r *http.Request)
+	CreateReservation(w http.ResponseWriter, r *http.Request)
 }
 
 type IHouses interface {
@@ -67,8 +67,8 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r.HandleFunc(healthPath, dep.Handlers.General.Health)
 	r.HandleFunc(versionPath, dep.Handlers.General.Version)
 
-	reservations := r.PathPrefix(reservePath).Subrouter()
-	reservations.HandleFunc("/house", dep.Handlers.Reservations.BookAHouse).Methods(http.MethodPost)
+	reservations := r.PathPrefix(reservationPath).Subrouter()
+	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.CreateReservation).Methods(http.MethodPost)
 
 	houses := r.PathPrefix(housesPath).Subrouter()
 	houses.HandleFunc(emptyPath, dep.Handlers.Houses.Add).Methods(http.MethodPost)

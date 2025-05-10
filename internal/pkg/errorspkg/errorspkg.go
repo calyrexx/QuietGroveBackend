@@ -1,8 +1,13 @@
 package errorspkg
 
 import (
+	"errors"
 	"fmt"
 	"time"
+)
+
+var (
+	ErrInternalService = errors.New("internal service error")
 )
 
 type ErrViperReadInConfig struct {

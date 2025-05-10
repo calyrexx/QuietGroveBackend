@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"context"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/api/handlers"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
+	"time"
 )
 
 type IReservationsUseCase interface {
@@ -28,10 +30,55 @@ func NewReservations(d *ReservationsDependencies) (*Reservations, error) {
 	}, nil
 }
 
-func (c *Reservations) BookAHouse(ctx context.Context, req usecases.CreateReservationRequest) (entities.Reservation, error) {
-	response, err := c.useCase.CreateReservation(ctx, req)
+func (c *Reservations) CreateReservation(ctx context.Context, req handlers.CreateReservation) (entities.Reservation, error) {
+	request, err := c.convertCreateReservation(req)
+	if err != nil {
+		return entities.Reservation{}, err
+	}
+	response, err := c.useCase.CreateReservation(ctx, request)
 	if err != nil {
 		return entities.Reservation{}, err
 	}
 	return response, nil
+}
+
+func (c *Reservations) convertCreateReservation(req handlers.CreateReservation) (usecases.CreateReservationRequest, error) {
+	resp := usecases.CreateReservationRequest{
+		HouseID:     req.HouseID,
+		Guest:       c.convertGuest(req.Guest),
+		GuestsCount: req.GuestsCount,
+		Extras:      c.convertExtras(req.Extras),
+	}
+	cITime, err := time.Parse(time.DateOnly, req.CheckIn)
+	if err != nil {
+		return resp, err
+	}
+	cOTime, err := time.Parse(time.DateOnly, req.CheckOut)
+	if err != nil {
+		return resp, err
+	}
+	resp.CheckIn = cITime
+	resp.CheckOut = cOTime
+
+	return resp, nil
+}
+
+func (c *Reservations) convertGuest(guest handlers.Guest) entities.Guest {
+	return entities.Guest{
+		Name:  guest.Name,
+		Email: guest.Email,
+		Phone: guest.Phone,
+	}
+}
+
+func (c *Reservations) convertExtras(extras []handlers.ExtraReservation) []entities.ReservationExtra {
+	res := make([]entities.ReservationExtra, 0, len(extras))
+	for _, e := range extras {
+		res = append(res, entities.ReservationExtra{
+			ExtraID:  e.ID,
+			Quantity: e.Quantity,
+			Amount:   e.Amount,
+		})
+	}
+	return res
 }

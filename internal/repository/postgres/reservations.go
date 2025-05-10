@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 )
 
 type ReservationsRepo struct {
@@ -35,8 +35,8 @@ func (r *ReservationsRepo) CheckAvailability(ctx context.Context, req entities.C
 		ctx,
 		query,
 		req.HouseId,
-		req.CheckIn.Format(repository.DateFormat),
-		req.CheckOut.Format(repository.DateFormat),
+		req.CheckIn.Format(time.DateOnly),
+		req.CheckOut.Format(time.DateOnly),
 	).Scan(&available)
 
 	if err != nil {
@@ -104,8 +104,8 @@ func (r *ReservationsRepo) Create(ctx context.Context, reservation entities.Rese
 		uuid.New(),
 		reservation.HouseID,
 		reservation.GuestUUID,
-		reservation.CheckIn.Format(repository.DateFormat),
-		reservation.CheckOut.Format(repository.DateFormat),
+		reservation.CheckIn.Format(time.DateOnly),
+		reservation.CheckOut.Format(time.DateOnly),
 		reservation.GuestsCount,
 		reservation.Status,
 		reservation.TotalPrice,

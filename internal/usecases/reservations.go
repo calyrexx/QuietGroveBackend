@@ -52,15 +52,6 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 	}, nil
 }
 
-type CreateReservationRequest struct {
-	HouseID     int
-	Guest       entities.Guest
-	CheckIn     time.Time
-	CheckOut    time.Time
-	GuestsCount int
-	Extras      []entities.ReservationExtra
-}
-
 func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservationRequest) (entities.Reservation, error) {
 	response := entities.Reservation{}
 
