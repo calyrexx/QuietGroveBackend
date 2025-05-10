@@ -1,6 +1,14 @@
 package errorspkg
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
+
+var (
+	ErrInternalService = errors.New("internal service error")
+)
 
 type ErrViperReadInConfig struct {
 	errorMsg error
@@ -74,5 +82,23 @@ func NewErrRepoNotFound(unit, id, method string) error {
 		unit:   unit,
 		id:     id,
 		method: method,
+	}
+}
+
+type ErrHouseUnavailable struct {
+	HouseID  int
+	CheckIn  time.Time
+	CheckOut time.Time
+}
+
+func (err ErrHouseUnavailable) Error() string {
+	return fmt.Sprintf("house [%d] unavailable, checkIn: %v, checkOut: %v", err.HouseID, err.CheckIn, err.CheckOut)
+}
+
+func NewErrHouseUnavailable(houseID int, checkIn, checkOut time.Time) error {
+	return &ErrHouseUnavailable{
+		HouseID:  houseID,
+		CheckIn:  checkIn,
+		CheckOut: checkOut,
 	}
 }

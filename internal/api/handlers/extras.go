@@ -83,12 +83,12 @@ func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req Extra
-	if err := api.ReadJSON(r, &req); err != nil {
+	if err = api.ReadJSON(r, &req); err != nil {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.controller.Update(ctx, req); err != nil {
+	if err = h.controller.Update(ctx, req); err != nil {
 		status := http.StatusInternalServerError
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
@@ -110,7 +110,7 @@ func (h *Extras) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.controller.Delete(ctx, id); err != nil {
+	if err = h.controller.Delete(ctx, id); err != nil {
 		status := http.StatusInternalServerError
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
@@ -120,5 +120,5 @@ func (h *Extras) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJSON(w, http.StatusNoContent, nil)
+	api.WriteJSON(w, http.StatusOK, nil)
 }

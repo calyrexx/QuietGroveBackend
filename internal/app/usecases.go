@@ -1,24 +1,29 @@
 package app
 
 import (
+	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
 	"github.com/sirupsen/logrus"
 )
 
 type Usecases struct {
-	reservations *usecases.Reservations
+	reservations *usecases.Reservation
 	houses       *usecases.Houses
 	extras       *usecases.Extras
 }
 
 func NewUsecases(
 	logger logrus.FieldLogger,
+	config *configuration.Config,
 	repo *Registry,
 ) (*Usecases, error) {
 
-	reservationsUsecase, err := usecases.NewReservations(&usecases.ReservationsDependencies{
-		Repo:   repo,
-		Logger: logger,
+	reservationsUsecase, err := usecases.NewReservation(&usecases.ReservationDependencies{
+		ReservationRepo: repo.Reservations,
+		GuestRepo:       repo.Guests,
+		HouseRepo:       repo.Houses,
+		PCoefs:          config.PriceCoefficients,
+		Logger:          logger,
 	})
 	if err != nil {
 		return nil, err

@@ -12,6 +12,7 @@ type Registry struct {
 	Reservations repository.IReservations
 	Houses       repository.IHouses
 	Extras       repository.IExtras
+	Guests       repository.IGuests
 }
 
 func NewRepo(ctx context.Context, creds *configuration.Credentials) (*Registry, error) {
@@ -27,10 +28,12 @@ func InitRepoRegistry(postgresConnect *pgxpool.Pool) (*Registry, error) {
 	reservationsRepo := postgres.NewReservationsRepo(postgresConnect)
 	housesRepo := postgres.NewHousesRepo(postgresConnect)
 	extrasRepo := postgres.NewExtrasRepo(postgresConnect)
+	guestsRepo := postgres.NewGuestsRepo(postgresConnect)
 
 	return &Registry{
 		Reservations: reservationsRepo,
 		Houses:       housesRepo,
 		Extras:       extrasRepo,
+		Guests:       guestsRepo,
 	}, nil
 }

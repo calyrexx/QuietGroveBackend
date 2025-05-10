@@ -36,7 +36,7 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 	var extras []entities.Extra
 	for rows.Next() {
 		var e entities.Extra
-		if err := rows.Scan(
+		if err = rows.Scan(
 			&e.ID,
 			&e.Name,
 			&e.Description,
@@ -47,7 +47,7 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 		}
 		extras = append(extras, e)
 	}
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, errorspkg.NewErrRepoFailed("rows.Err", method, err)
 	}
 	return extras, nil
@@ -122,5 +122,6 @@ func (r *ExtrasRepo) Delete(ctx context.Context, id int) error {
 	if tag.RowsAffected() == 0 {
 		return errorspkg.NewErrRepoNotFound("extra", strconv.Itoa(id), method)
 	}
+
 	return nil
 }

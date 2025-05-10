@@ -20,10 +20,10 @@ func New(
 	ctx context.Context,
 	logger logrus.FieldLogger,
 	version string,
-	conf *configuration.Config,
+	config *configuration.Config,
 	creds *configuration.Credentials,
 ) (*App, error) {
-	if conf == nil {
+	if config == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("App", "Config", "nil")
 	}
 	if creds == nil {
@@ -35,7 +35,7 @@ func New(
 		return nil, err
 	}
 
-	usecases, err := NewUsecases(logger, repo)
+	usecases, err := NewUsecases(logger, config, repo)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func New(
 	restServer, err := NewRest(
 		controllers,
 		logger,
-		conf.WebServer,
+		config.WebServer,
 		version,
 	)
 	if err != nil {

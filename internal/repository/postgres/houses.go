@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strconv"
 )
@@ -41,7 +43,7 @@ func (r *HousesRepo) GetAll(ctx context.Context) ([]entities.House, error) {
 	var results []entities.House
 	for rows.Next() {
 		var house entities.House
-		if err := rows.Scan(
+		if err = rows.Scan(
 			&house.ID,
 			&house.Name,
 			&house.Description,
@@ -55,11 +57,54 @@ func (r *HousesRepo) GetAll(ctx context.Context) ([]entities.House, error) {
 		}
 		results = append(results, house)
 	}
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, errorspkg.NewErrRepoFailed("rows.Err", method, err)
 	}
 
 	return results, nil
+}
+
+func (r *HousesRepo) GetOne(ctx context.Context, id int) (entities.House, error) {
+	const method = "housesRepo.GetOne"
+
+	query := `
+        SELECT 
+            id,
+            name,
+            description,
+            
+            capacity,
+            base_price,
+            
+            images,
+            
+            check_in_from,
+            check_out_until
+        FROM houses
+        WHERE id = $1
+    `
+
+	var house entities.House
+
+	err := r.pool.QueryRow(ctx, query, id).Scan(
+		&house.ID,
+		&house.Name,
+		&house.Description,
+		&house.Capacity,
+		&house.BasePrice,
+		&house.Images,
+		&house.CheckInFrom,
+		&house.CheckOutUntil,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.House{}, errorspkg.NewErrRepoNotFound("house", strconv.Itoa(id), method)
+		}
+		return entities.House{}, errorspkg.NewErrRepoFailed("QueryRow", method, err)
+	}
+
+	return house, nil
 }
 
 func (r *HousesRepo) Add(ctx context.Context, house entities.House) error {

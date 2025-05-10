@@ -13,3 +13,11 @@ HttpServer:
   IdleTimeout: 1s
   MaxHeaderBytes: 500
   ShutdownTimeout: 5s
+
+PriceCoefficients:
+  - Start: "2023-12-29"
+    End: "2024-01-07"
+    Rate: 1.2
+  - Start: "2024-05-01"
+    End: "2024-05-10"
+    Rate: 1.3

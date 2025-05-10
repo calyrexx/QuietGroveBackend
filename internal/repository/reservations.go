@@ -1,7 +1,13 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
+)
 
 type IReservations interface {
-	BookAHouse(ctx context.Context, req string) error
+	GetAvailableHouses(ctx context.Context, req entities.GetAvailableHouses) ([]int, error)
+	CheckAvailability(ctx context.Context, req entities.CheckAvailability) (bool, error)
+	GetPrice(ctx context.Context, houseID int, extras []entities.ReservationExtra) (entities.GetPrice, error)
+	Create(ctx context.Context, reservation entities.Reservation) error
 }
