@@ -22,6 +22,7 @@ type Middlewares struct {
 
 type IReservations interface {
 	CreateReservation(w http.ResponseWriter, r *http.Request)
+	GetAvailableHouses(w http.ResponseWriter, r *http.Request)
 }
 
 type IHouses interface {
@@ -68,6 +69,7 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r.HandleFunc(versionPath, dep.Handlers.General.Version)
 
 	reservations := r.PathPrefix(reservationPath).Subrouter()
+	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.GetAvailableHouses).Methods(http.MethodGet)
 	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.CreateReservation).Methods(http.MethodPost)
 
 	houses := r.PathPrefix(housesPath).Subrouter()

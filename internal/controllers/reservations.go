@@ -11,6 +11,7 @@ import (
 
 type IReservationsUseCase interface {
 	CreateReservation(ctx context.Context, req usecases.CreateReservationRequest) (entities.Reservation, error)
+	GetAvailableHouses(ctx context.Context, req entities.GetAvailableHouses) ([]usecases.GetAvailableHousesResponse, error)
 }
 
 type ReservationsDependencies struct {
@@ -30,16 +31,48 @@ func NewReservations(d *ReservationsDependencies) (*Reservations, error) {
 	}, nil
 }
 
+func (c *Reservations) GetAvailableHouses(ctx context.Context, req handlers.GetAvailableHouses) ([]usecases.GetAvailableHousesResponse, error) {
+	request, err := c.convertGetAvailableHousesReq(req)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := c.useCase.GetAvailableHouses(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func (c *Reservations) CreateReservation(ctx context.Context, req handlers.CreateReservation) (entities.Reservation, error) {
 	request, err := c.convertCreateReservation(req)
 	if err != nil {
 		return entities.Reservation{}, err
 	}
+
 	response, err := c.useCase.CreateReservation(ctx, request)
 	if err != nil {
 		return entities.Reservation{}, err
 	}
+
 	return response, nil
+}
+
+func (c *Reservations) convertGetAvailableHousesReq(req handlers.GetAvailableHouses) (entities.GetAvailableHouses, error) {
+	in, err := time.Parse(time.DateOnly, req.CheckIn)
+	if err != nil {
+		return entities.GetAvailableHouses{}, err
+	}
+	out, err := time.Parse(time.DateOnly, req.CheckOut)
+	if err != nil {
+		return entities.GetAvailableHouses{}, err
+	}
+	return entities.GetAvailableHouses{
+		CheckIn:     in,
+		CheckOut:    out,
+		GuestsCount: req.GuestsCount,
+	}, nil
 }
 
 func (c *Reservations) convertCreateReservation(req handlers.CreateReservation) (usecases.CreateReservationRequest, error) {

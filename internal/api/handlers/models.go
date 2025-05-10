@@ -20,6 +20,12 @@ type (
 		Images      []string `json:"images"`
 	}
 
+	GetAvailableHouses struct {
+		CheckIn     string `schema:"in"`
+		CheckOut    string `schema:"out"`
+		GuestsCount int    `schema:"guests"`
+	}
+
 	CreateReservation struct {
 		HouseID     int                `json:"houseId"`
 		Guest       Guest              `json:"guest"`

@@ -16,6 +16,7 @@ type (
 	ReservationDependencies struct {
 		ReservationRepo repository.IReservations
 		GuestRepo       repository.IGuests
+		HouseRepo       repository.IHouses
 		PCoefs          []configuration.PriceCoefficient
 		Logger          logrus.FieldLogger
 	}
@@ -23,6 +24,7 @@ type (
 	Reservation struct {
 		reservationRepo repository.IReservations
 		guestRepo       repository.IGuests
+		houseRepo       repository.IHouses
 		pCoefs          []configuration.PriceCoefficient
 		logger          logrus.FieldLogger
 	}
@@ -38,6 +40,9 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 	if d.GuestRepo == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "GuestRepo", "nil")
 	}
+	if d.HouseRepo == nil {
+		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "HouseRepo", "nil")
+	}
 	if d.PCoefs == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "PCoefs", "nil")
 	}
@@ -47,9 +52,41 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 	return &Reservation{
 		reservationRepo: d.ReservationRepo,
 		guestRepo:       d.GuestRepo,
+		houseRepo:       d.HouseRepo,
 		pCoefs:          d.PCoefs,
 		logger:          logger,
 	}, nil
+}
+
+func (u *Reservation) GetAvailableHouses(ctx context.Context, req entities.GetAvailableHouses) ([]GetAvailableHousesResponse, error) {
+	availableIDs, err := u.reservationRepo.GetAvailableHouses(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]GetAvailableHousesResponse, 0, len(availableIDs))
+	for _, id := range availableIDs {
+		house, repoErr := u.houseRepo.GetOne(ctx, id)
+		if repoErr != nil {
+			return nil, repoErr
+		}
+		nights := int(req.CheckOut.Sub(req.CheckIn).Hours() / 24)
+		totalPrice := u.calculateTotalPrice(house.BasePrice, 0, req.CheckIn, req.CheckOut)
+		price := totalPrice / nights
+		response = append(response, GetAvailableHousesResponse{
+			ID:            house.ID,
+			Name:          house.Name,
+			Description:   house.Description,
+			Capacity:      house.Capacity,
+			BasePrice:     price,
+			TotalPrice:    totalPrice,
+			Images:        house.Images,
+			CheckInFrom:   house.CheckInFrom,
+			CheckOutUntil: house.CheckOutUntil,
+		})
+	}
+
+	return response, nil
 }
 
 func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservationRequest) (entities.Reservation, error) {

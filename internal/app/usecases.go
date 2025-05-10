@@ -21,6 +21,7 @@ func NewUsecases(
 	reservationsUsecase, err := usecases.NewReservation(&usecases.ReservationDependencies{
 		ReservationRepo: repo.Reservations,
 		GuestRepo:       repo.Guests,
+		HouseRepo:       repo.Houses,
 		PCoefs:          config.PriceCoefficients,
 		Logger:          logger,
 	})

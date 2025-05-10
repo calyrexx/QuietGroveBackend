@@ -68,6 +68,12 @@ type (
 		Extras int
 	}
 
+	GetAvailableHouses struct {
+		CheckIn     time.Time
+		CheckOut    time.Time
+		GuestsCount int
+	}
+
 	CheckAvailability struct {
 		HouseId  int
 		CheckIn  time.Time

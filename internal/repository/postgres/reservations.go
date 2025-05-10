@@ -17,6 +17,54 @@ func NewReservationsRepo(pool *pgxpool.Pool) *ReservationsRepo {
 	return &ReservationsRepo{pool: pool}
 }
 
+func (r *ReservationsRepo) GetAvailableHouses(ctx context.Context, req entities.GetAvailableHouses) ([]int, error) {
+	const method = "reservationsRepo.CheckAvailability"
+
+	query := `
+        SELECT h.id
+        FROM houses h
+        WHERE h.capacity >= $3
+        AND NOT EXISTS (
+            SELECT 1 FROM reservations r
+            WHERE r.house_id = h.id
+            AND r.stay && daterange($1::date, $2::date)
+            AND r.status NOT IN ('cancelled', 'checked_out')
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM blackouts b
+            WHERE b.house_id = h.id
+            AND b.period && daterange($1::date, $2::date)
+        )
+    `
+
+	rows, err := r.pool.Query(
+		ctx,
+		query,
+		req.CheckIn,
+		req.CheckOut,
+		req.GuestsCount,
+	)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("Query", method, err)
+	}
+	defer rows.Close()
+
+	var availableHouseIDs []int
+	for rows.Next() {
+		var houseID int
+		if err = rows.Scan(&houseID); err != nil {
+			return nil, errorspkg.NewErrRepoFailed("Scan", method, err)
+		}
+		availableHouseIDs = append(availableHouseIDs, houseID)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errorspkg.NewErrRepoFailed("rows.Err", method, err)
+	}
+
+	return availableHouseIDs, nil
+}
+
 func (r *ReservationsRepo) CheckAvailability(ctx context.Context, req entities.CheckAvailability) (bool, error) {
 	const method = "reservationsRepo.CheckAvailability"
 
