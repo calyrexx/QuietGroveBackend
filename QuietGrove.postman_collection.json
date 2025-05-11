@@ -1,0 +1,136 @@
+{
+	"info": {
+		"_postman_id": "70cc734f-39ef-441e-b493-194e6806734e",
+		"name": "QuietGroove",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41696198"
+	},
+	"item": [
+		{
+			"name": "Add house",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ID\": 2,\n    \"Title\": \"Коттедж\",\n    \"Description\": \"Компактный, но невероятно уютный домик для двоих или небольшой семьи. Внутри — тёплый скандинавский интерьер, кухня с основными удобствами, мягкая кровать и панорамные окна с видом на лес. Отличный выбор для тех, кто хочет насладиться тишиной, уединением и природой без потери комфорта.\",\n    \"People\": 8,\n    \"Cost\": 10000,\n    \"Images\":\n        [\n            \"/src/assets/Houses/houses15.jpg\",\n            \"/src/assets/Houses/houses16.jpg\",\n            \"/src/assets/Houses/houses17.jpg\",\n            \"/src/assets/Houses/houses18.jpg\",\n            \"/src/assets/Houses/houses19.jpg\",\n            \"/src/assets/Houses/houses20.jpg\",\n            \"/src/assets/Houses/houses21.jpg\"\n        ],\n    \"TimeFirst\": \"14:00\",\n    \"TimeSecond\": \"11:00\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}/houses",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"houses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete house",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/houses/1",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"houses",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all houses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/houses",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"houses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAvailableHouses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{local}}/reservation?guests=5&in=2024-05-01&out=2024-05-10",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"reservation"
+					],
+					"query": [
+						{
+							"key": "guests",
+							"value": "5"
+						},
+						{
+							"key": "in",
+							"value": "2024-05-01"
+						},
+						{
+							"key": "out",
+							"value": "2024-05-10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update house info",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}/houses/1",
+					"host": [
+						"{{local}}"
+					],
+					"path": [
+						"houses",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "local",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

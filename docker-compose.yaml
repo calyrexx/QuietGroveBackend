@@ -1,8 +1,9 @@
+# docker-compose.yml
 services:
   postgres:
     image: postgres:17
-    container_name: quiet_groove
-    restart: no
+    container_name: quiet_groove_db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -10,7 +11,32 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_quiet_groove_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d reservations"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: quiet_groove_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: reservations
+    volumes:
+      - ./configuration.yaml:/app/configuration.yaml
+      - ./credentials.yaml:/app/credentials.yaml
+      - ./deploy:/app/deploy
 
 volumes:
-  postgres_quiet_groove_data:
+  postgres_data:
