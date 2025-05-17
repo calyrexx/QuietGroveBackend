@@ -15,6 +15,7 @@ type (
 	Extra struct {
 		ID          int      `json:"id"`
 		Name        string   `json:"title"`
+		Text        string   `json:"text"`
 		Description string   `json:"description"`
 		BasePrice   int      `json:"cost"`
 		Images      []string `json:"images"`

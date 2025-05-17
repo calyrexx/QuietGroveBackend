@@ -11,7 +11,7 @@ import (
 
 type IExtrasControllers interface {
 	GetAll(ctx context.Context) ([]Extra, error)
-	Add(ctx context.Context, extras Extra) error
+	Add(ctx context.Context, extras []Extra) error
 	Update(ctx context.Context, extra Extra) error
 	Delete(ctx context.Context, extraID int) error
 }
@@ -58,7 +58,7 @@ func (h *Extras) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *Extras) Add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req Extra
+	var req []Extra
 	if err := api.ReadJSON(r, &req); err != nil {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return

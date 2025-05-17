@@ -102,3 +102,15 @@ func NewErrHouseUnavailable(houseID int, checkIn, checkOut time.Time) error {
 		CheckOut: checkOut,
 	}
 }
+
+type ErrPanicWrapper struct {
+	err interface{}
+}
+
+func (e ErrPanicWrapper) Error() string {
+	return fmt.Sprintf("got panic: %v", e.err)
+}
+
+func NewErrPanicWrapper(err interface{}) error {
+	return &ErrPanicWrapper{err: err}
+}

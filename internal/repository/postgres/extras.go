@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strconv"
 )
@@ -22,6 +23,7 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 		SELECT 
 			id,
 			name,
+			text,
 			description,
 			price,
 			images
@@ -39,6 +41,7 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 		if err = rows.Scan(
 			&e.ID,
 			&e.Name,
+			&e.Text,
 			&e.Description,
 			&e.BasePrice,
 			&e.Images,
@@ -53,34 +56,49 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 	return extras, nil
 }
 
-func (r *ExtrasRepo) Add(ctx context.Context, extra entities.Extra) error {
+func (r *ExtrasRepo) Add(ctx context.Context, extras []entities.Extra) error {
 	const method = "extrasRepo.Add"
+
 	query := `
 		INSERT INTO extras (
 			id,
 			name,
+		    text,
 			description,
 			price,
 			images
 		)
 		VALUES (
-			$1,
+			$1, 
 		    $2,
-		    $3,
+		    $3, 
 		    $4,
-		    $5
+		    $5,
+		    $6
 		)
 	`
-	_, err := r.pool.Exec(ctx, query,
-		extra.ID,
-		extra.Name,
-		extra.Description,
-		extra.BasePrice,
-		extra.Images,
-	)
-	if err != nil {
-		return errorspkg.NewErrRepoFailed("pool.Exec", method, err)
+
+	batch := &pgx.Batch{}
+	for _, extra := range extras {
+		batch.Queue(query,
+			extra.ID,
+			extra.Name,
+			extra.Text,
+			extra.Description,
+			extra.BasePrice,
+			extra.Images,
+		)
 	}
+
+	br := r.pool.SendBatch(ctx, batch)
+	defer br.Close()
+
+	for i := 0; i < len(extras); i++ {
+		if _, err := br.Exec(); err != nil {
+			return errorspkg.NewErrRepoFailed("batch.Exec", method, err)
+		}
+	}
+
 	return nil
 }
 
@@ -93,14 +111,16 @@ func (r *ExtrasRepo) Update(ctx context.Context, extra entities.Extra) error {
 		    description = $2,
 		    price       = $3,
 		    images      = $4,
+		    text        = $5,
 		    updated_at  = now()
-		WHERE id = $5
+		WHERE id = $6
 	`
 	rows, err := r.pool.Exec(ctx, query,
 		extra.Name,
 		extra.Description,
 		extra.BasePrice,
 		extra.Images,
+		extra.Text,
 		extra.ID,
 	)
 	if err != nil {

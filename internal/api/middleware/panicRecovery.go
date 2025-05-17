@@ -33,7 +33,7 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				panicErr := NewErrPanicWrapper(err)
+				panicErr := errorspkg.NewErrPanicWrapper(err)
 				mw.logger.Error(panicErr)
 				api.WriteError(w, http.StatusInternalServerError, errorspkg.ErrInternalService)
 				return

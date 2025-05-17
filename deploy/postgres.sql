@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE TABLE IF NOT EXISTS extras (
     id smallint PRIMARY KEY,
     name text NOT NULL,
+    shortText text NOT NULL,
     description text NOT NULL,
     images text[] NOT NULL DEFAULT '{}'::text[],
     price numeric(10,2) NOT NULL,

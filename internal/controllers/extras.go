@@ -9,7 +9,7 @@ import (
 
 type IExtrasUseCase interface {
 	GetAll(ctx context.Context) ([]entities.Extra, error)
-	Add(ctx context.Context, extra entities.Extra) error
+	Add(ctx context.Context, extra []entities.Extra) error
 	Update(ctx context.Context, extra entities.Extra) error
 	Delete(ctx context.Context, extraID int) error
 }
@@ -40,8 +40,12 @@ func (c *Extras) GetAll(ctx context.Context) ([]handlers.Extra, error) {
 	return c.convertEntitiesToExtras(res), nil
 }
 
-func (c *Extras) Add(ctx context.Context, extra handlers.Extra) error {
-	return c.useCase.Add(ctx, c.convertExtraToEntity(extra))
+func (c *Extras) Add(ctx context.Context, extras []handlers.Extra) error {
+	if len(extras) == 0 {
+		return nil
+	}
+
+	return c.useCase.Add(ctx, c.convertExtrasToEntity(extras))
 }
 
 func (c *Extras) Update(ctx context.Context, extra handlers.Extra) error {
@@ -64,18 +68,27 @@ func (c *Extras) convertEntityToExtra(entity entities.Extra) handlers.Extra {
 	return handlers.Extra{
 		ID:          entity.ID,
 		Name:        entity.Name,
+		Text:        entity.Text,
 		Description: entity.Description,
 		BasePrice:   entity.BasePrice,
 		Images:      entity.Images,
 	}
 }
 
-func (c *Extras) convertExtraToEntity(house handlers.Extra) entities.Extra {
+func (c *Extras) convertExtrasToEntity(extras []handlers.Extra) []entities.Extra {
+	resp := make([]entities.Extra, 0, len(extras))
+	for _, extra := range extras {
+		resp = append(resp, c.convertExtraToEntity(extra))
+	}
+	return resp
+}
+
+func (c *Extras) convertExtraToEntity(extra handlers.Extra) entities.Extra {
 	return entities.Extra{
-		ID:          house.ID,
-		Name:        house.Name,
-		Description: house.Description,
-		BasePrice:   house.BasePrice,
-		Images:      house.Images,
+		ID:          extra.ID,
+		Name:        extra.Name,
+		Description: extra.Description,
+		BasePrice:   extra.BasePrice,
+		Images:      extra.Images,
 	}
 }

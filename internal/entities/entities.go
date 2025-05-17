@@ -47,6 +47,7 @@ type (
 	Extra struct {
 		ID          int
 		Name        string
+		Text        string
 		Description string
 		BasePrice   int
 		Images      []string
