@@ -75,6 +75,7 @@ func New(
 		appCron:     appCron,
 		controllers: controllers,
 		usecases:    usecases,
+		notifier:    tgBot,
 	}, nil
 }
 

@@ -58,6 +58,7 @@ func NewRest(
 
 	verificationHandler, err := handlers.NewVerification(handlers.VerificationDependencies{
 		Controller: controllers.Verification,
+		Logger:     logger,
 	})
 	if err != nil {
 		return nil, err

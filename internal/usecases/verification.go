@@ -7,6 +7,7 @@ import (
 	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
+	"math/big"
 	"time"
 )
 
@@ -62,11 +63,10 @@ func (s *Verification) Approve(ctx context.Context, code string, tgID int64) err
 }
 
 func sixDigits() string {
-	b := make([]byte, 3)
-	_, err := rand.Read(b)
+	n, err := rand.Int(rand.Reader, big.NewInt(900_000))
 	if err != nil {
 		return ""
 	}
-
-	return fmt.Sprintf("%06d", int(b[0])<<16|int(b[1])<<8|int(b[2])%1e6)
+	code := n.Int64() + 100_000
+	return fmt.Sprintf("%06d", code)
 }

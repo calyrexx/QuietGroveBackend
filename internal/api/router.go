@@ -74,7 +74,7 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r.HandleFunc(healthPath, dep.Handlers.General.Health)
 	r.HandleFunc(versionPath, dep.Handlers.General.Version)
 
-	r.HandleFunc(versionPath, dep.Handlers.Verification.VerifyIdentity).Methods("POST")
+	r.HandleFunc(verificationPath, dep.Handlers.Verification.VerifyIdentity).Methods("POST")
 
 	reservations := r.PathPrefix(reservationPath).Subrouter()
 	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.GetAvailableHouses).Methods(http.MethodGet)
