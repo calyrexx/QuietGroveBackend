@@ -8,6 +8,11 @@
 # Test binary, built with `go test -c`
 *.test
 
+# Folders for docker build
+config.yaml
+creds.yaml
+deploy/postgres
+
 # Go workspace file
 go.work
 go.work.sum
