@@ -23,7 +23,7 @@ func (r *ExtrasRepo) GetAll(ctx context.Context) ([]entities.Extra, error) {
 		SELECT 
 			id,
 			name,
-			shortText,
+			short_text,
 			description,
 			price,
 			images
@@ -63,7 +63,7 @@ func (r *ExtrasRepo) Add(ctx context.Context, extras []entities.Extra) error {
 		INSERT INTO extras (
 			id,
 			name,
-		    shortText,
+		    short_text,
 			description,
 			price,
 			images
@@ -111,7 +111,7 @@ func (r *ExtrasRepo) Update(ctx context.Context, extra entities.Extra) error {
 		    description = $2,
 		    price       = $3,
 		    images      = $4,
-		    shortText   = $5,
+		    short_text   = $5,
 		    updated_at  = now()
 		WHERE id = $6
 	`

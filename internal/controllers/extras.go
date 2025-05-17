@@ -87,6 +87,7 @@ func (c *Extras) convertExtraToEntity(extra handlers.Extra) entities.Extra {
 	return entities.Extra{
 		ID:          extra.ID,
 		Name:        extra.Name,
+		Text:        extra.Text,
 		Description: extra.Description,
 		BasePrice:   extra.BasePrice,
 		Images:      extra.Images,

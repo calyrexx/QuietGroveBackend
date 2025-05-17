@@ -1,134 +1,361 @@
 {
 	"info": {
 		"_postman_id": "70cc734f-39ef-441e-b493-194e6806734e",
-		"name": "QuietGroove",
+		"name": "QuietGrove",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "41696198"
 	},
 	"item": [
 		{
-			"name": "Add house",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"ID\": 2,\n    \"Title\": \"Коттедж\",\n    \"Description\": \"Компактный, но невероятно уютный домик для двоих или небольшой семьи. Внутри — тёплый скандинавский интерьер, кухня с основными удобствами, мягкая кровать и панорамные окна с видом на лес. Отличный выбор для тех, кто хочет насладиться тишиной, уединением и природой без потери комфорта.\",\n    \"People\": 8,\n    \"Cost\": 10000,\n    \"Images\":\n        [\n            \"/src/assets/Houses/houses15.jpg\",\n            \"/src/assets/Houses/houses16.jpg\",\n            \"/src/assets/Houses/houses17.jpg\",\n            \"/src/assets/Houses/houses18.jpg\",\n            \"/src/assets/Houses/houses19.jpg\",\n            \"/src/assets/Houses/houses20.jpg\",\n            \"/src/assets/Houses/houses21.jpg\"\n        ],\n    \"TimeFirst\": \"14:00\",\n    \"TimeSecond\": \"11:00\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{local}}/houses",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"houses"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete house",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{local}}/houses/1",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"houses",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get all houses",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{local}}/houses",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"houses"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GetAvailableHouses",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{local}}/reservation?guests=5&in=2024-05-01&out=2024-05-10",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"reservation"
-					],
-					"query": [
-						{
-							"key": "guests",
-							"value": "5"
+			"name": "houses",
+			"item": [
+				{
+					"name": "Add house",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"id\": 1,\n    \"title\": \"Барнхаус\",\n    \"description\": \"Современный просторный барнхаус с панорамными окнами и стильным минималистичным дизайном. В доме высокие потолки, большая гостиная с камином, полностью оборудованная кухня и уютные спальни. Просторная терраса с зоной отдыха и грилем идеально подходит для вечерних посиделок. Идеальный вариант для тех, кто ценит комфорт и природу. Барнхаус подойдёт как для спокойного отдыха, так и для активных встреч с друзьями. Отдельный вход и уединённое расположение обеспечат вам полную приватность.\",\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237710/houses1_ebawfo.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237713/houses2_bf7pwd.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237717/houses3_gm0gt8.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237721/houses4_e3r3u0.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237725/houses5_jeo2of.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237729/houses6_nq36fr.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237733/houses7_f1yirp.webp\"\n    ],\n    \"timeFirst\": \"14:00\",\n    \"timeSecond\": \"11:00\",\n    \"people\": 15,\n    \"cost\": 15000\n  },\n  {\n    \"id\": 2,\n    \"title\": \"Коттедж\",\n    \"description\": \"Компактный, но невероятно уютный домик для двоих или небольшой семьи. Внутри — тёплый скандинавский интерьер, кухня с основными удобствами, мягкая кровать и панорамные окна с видом на лес. Отличный выбор для тех, кто хочет насладиться тишиной, уединением и природой без потери комфорта. Утренний туман над лесом и аромат свежесваренного кофе создают по-настоящему сказочную атмосферу. Идеален для отдыха в любое время года — летом, зимой или в межсезонье.\",\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237737/houses8_pbv273.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237741/houses9_ps5srq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237744/houses10_h0tbfx.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237748/houses11_ut4w0a.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237753/houses12_w8zrhm.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237757/houses13_saqqkd.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237761/houses14_ddnkpm.jpg\"\n    ],\n    \"timeFirst\": \"14:00\",\n    \"timeSecond\": \"11:00\",\n    \"people\": 8,\n    \"cost\": 10000\n  },\n  {\n    \"id\": 3,\n    \"title\": \"Глэмпинг\",\n    \"description\": \"Атмосферный палатка-домик для любителей глэмпинга. Просторное и стильное пространство с кроватью, мягкими пледами и панорамными видами на природу. Вечером можно любоваться звёздным небом прямо из окна или с уютной террасы. Этот вариант идеально подойдёт для романтического уик-энда или отдыха наедине с природой. В доме предусмотрено всё необходимое для комфортного проживания даже в прохладные вечера. Вдали от городской суеты вы сможете полностью перезагрузиться и отдохнуть душой.\",\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237765/houses15_djgvjf.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237769/houses16_pidmjw.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237774/houses17_dunsk0.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237778/houses18_hhzgu4.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237782/houses19_n6elki.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237786/houses20_wlqvn9.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237791/houses21_jka7ue.webp\"\n    ],\n    \"timeFirst\": \"14:00\",\n    \"timeSecond\": \"11:00\",\n    \"people\": 4,\n    \"cost\": 8000\n  }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						{
-							"key": "in",
-							"value": "2024-05-01"
-						},
-						{
-							"key": "out",
-							"value": "2024-05-10"
+						"url": {
+							"raw": "{{local}}/houses",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"houses"
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "Delete house",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/houses/{{houseID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"houses",
+								"{{houseID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all houses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/houses",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"houses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update house info",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Барнхаус\",\n    \"description\": \"Современный просторный барнхаус с панорамными окнами и стильным минималистичным дизайном. В доме высокие потолки, большая гостиная с камином, полностью оборудованная кухня и уютные спальни. Просторная терраса с зоной отдыха и грилем идеально подходит для вечерних посиделок. Идеальный вариант для тех, кто ценит комфорт и природу. Барнхаус подойдёт как для спокойного отдыха, так и для активных встреч с друзьями. Отдельный вход и уединённое расположение обеспечат вам полную приватность.\",\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237710/houses1_ebawfo.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237713/houses2_bf7pwd.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237717/houses3_gm0gt8.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237721/houses4_e3r3u0.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237725/houses5_jeo2of.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237729/houses6_nq36fr.webp\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237733/houses7_f1yirp.webp\"\n    ],\n    \"checkInFrom\": \"14:00\",\n    \"checkOutUntil\": \"11:00\",\n    \"capacity\": 10,\n    \"basePrice\": 10000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/houses/{{houseID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"houses",
+								"{{houseID}}"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Update house info",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "reservation",
+			"item": [
+				{
+					"name": "GetAvailableHouses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/reservation?guests=2&in=2025-04-06&out=2025-04-09",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"reservation"
+							],
+							"query": [
+								{
+									"key": "guests",
+									"value": "2"
+								},
+								{
+									"key": "in",
+									"value": "2025-04-06"
+								},
+								{
+									"key": "out",
+									"value": "2025-04-09"
+								}
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{local}}/houses/1",
-					"host": [
-						"{{local}}"
-					],
-					"path": [
-						"houses",
-						"1"
-					]
+				{
+					"name": "MakeReservation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"houseID\": 1,\n    \"guest\": {\n        \"name\": \"John Doe\",\n        \"email\": \"example@mail.com\",\n        \"phone\": \"+79965667446\"\n    },\n    \"checkIn\": \"2025-04-05\",\n    \"checkOut\": \"2025-04-10\",\n    \"guestsCount\": 7,\n    \"extras\": [\n        {\n            \"id\": 1,\n            \"quantity\": 3,\n            \"amount\": 2\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/reservation",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"reservation"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "extras",
+			"item": [
+				{
+					"name": "Add extra",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"id\": 1,\n    \"title\": \"Прокат велосипедов\",\n    \"text\": \"Отправьтесь в увлекательное путешествие по лесным тропам и живописным маршрутам на велосипеде. Прокат двухколесного транспорта — отличный способ активно провести время, наслаждаясь свежим воздухом и природными пейзажами.\",\n    \"description\": \"У нас доступны горные, городские и детские велосипеды. Прокат подойдёт как для взрослых, так и для детей старше 7 лет. Поход на велосипеде подарит отличное настроение и поможет открыть новые маршруты вокруг.\",\n    \"cost\": 300,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235095/card1_icxgcb.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235761/images2_ef3bzc.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235734/images3_jkqdi9.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235762/images1_d6qdkq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images4_uu6kjg.jpg\"\n    ]\n  },\n  {\n    \"id\": 2,\n    \"title\": \"Фотограф\",\n    \"text\": \"Сохраните лучшие моменты вашего отдыха с помощью профессиональной фотосессии. Уют природы, свет заката и ваша искренняя улыбка — идеальный рецепт красивых кадров. Сохраните прекрасные воспоминания о проведённом времени.\",\n    \"description\": \"Услуга профессионального фотографа для индивидуальных, парных или семейных фотосессий на территории глэмпинга. Возможна съёмка в доме, у бани, на фоне природы или во время активных развлечений.\",\n    \"cost\": 2500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326073/a3b1d45c-1a88-45a5-b841-767c23dd96cc.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326317/a9dbff94-b0f5-4974-9c49-b8679e0ffc38.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326474/559f8efe-1e04-4d38-8317-c0fd943b5364.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326547/ec6dbbf8-bd9c-4349-ad20-8e0caa1dff10.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326640/c2fd09d3-e2a7-4d9a-b5ee-caf6d2b2e35d.png\"\n    ]\n  },\n  {\n    \"id\": 3,\n    \"title\": \"Квадроциклы\",\n    \"text\": \"Почувствуйте азарт и свободу, отправившись в захватывающую поездку на квадроцикле по лесным тропам. Это отличный способ получить яркие эмоции, исследовать живописные окрестности и насладиться драйвом активного отдыха.\",\n    \"description\": \"В нашем прокате есть одиночные и двухместные квадроциклы. Катание подойдёт для подростков от 16 лет и взрослых, включая новичков. Мы предоставляем экипировку и короткий инструктаж перед поездкой.\",\n    \"cost\": 1500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235096/card3_yjcfsk.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235733/images9_tbmrxd.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images12_wlmvpq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235708/images11_j1ubto.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235708/images10_dioxvn.jpg\"\n    ]\n  },\n  {\n    \"id\": 4,\n    \"title\": \"Катание на сапах\",\n    \"text\": \"Исследуйте живописные окрестности с воды, наслаждаясь прогулкой на сапборде по спокойному озеру. Это отличный способ почувствовать единение с природой, расслабиться и провести время с удовольствием, скользя по глади воды под лучами солнца.\",\n    \"description\": \"Сапборды подойдут как новичкам, так и опытным райдерам. У нас есть доски разных размеров для взрослых и подростков от 10 лет. Инструктор поможет освоить основы управления и обеспечит безопасность на воде.\",\n    \"cost\": 1000,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235098/card4_zz7jcr.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images14_s0l5hy.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images15_j7faha.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images13_wgce0u.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235735/images16_jql4vm.jpg\"\n    ]\n  },\n  {\n    \"id\": 5,\n    \"title\": \"Звёздные вечера\",\n    \"text\": \"Откройте для себя красоту ночного неба, наблюдая за звездами и планетами через телескоп. Вдали от городских огней можно увидеть тысячи сияющих созвездий и почувствовать магию бескрайней вселенной.\",\n    \"description\": \"Для наблюдения используются современные телескопы с увеличением до 100 крат. Подходит для всей семьи, особенно для детей старше 6 лет. Наш гид расскажет интересные факты о звёздах и космосе.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235099/card5_a6ul9o.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235738/images18_kxvu6n.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235737/images17_mtqduq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images19_xmqcy0.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235711/images20_u4fi3k.webp\"\n    ]\n  },\n  {\n    \"id\": 6,\n    \"title\": \"Катание на лошадях\",\n    \"text\": \"Погрузитесь в атмосферу спокойствия и умиротворения, отправившись в прогулку верхом на лошади по живописным лесным тропам и лугам. Общение с животными подарит массу положительных эмоций.\",\n    \"description\": \"В нашем конном клубе есть спокойные и дружелюбные лошади разных пород. Прогулки возможны как для взрослых, так и для детей от 7 лет. Опытные инструкторы сопровождают и обеспечивают безопасность во время катания.\",\n    \"cost\": 1200,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235093/card6_rd3fjf.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235712/images22_ekdxda.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235713/images23_vpatsc.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235711/images21_rzu1ov.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235713/images24_v4swrr.jpg\"\n    ]\n  },\n  {\n    \"id\": 7,\n    \"title\": \"Мангал\",\n    \"text\": \"Насладитесь приготовлением любимых блюд на открытом огне. У каждого домика установлен индивидуальный мангал для комфортного отдыха с шашлыком или грилем.\",\n    \"description\": \"Все наши домики оборудованы собственными мангалами. Вы можете привезти свои продукты или воспользоваться нашими наборами для барбекю. Мы предоставляем решётки, уголь и розжиг по запросу. Уютная зона рядом с мангалом позволяет с комфортом провести вечер на свежем воздухе.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236716/cbd53ddd-b789-4f61-8669-10a074e316a6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236743/f0a50356-f452-4576-a7c8-241ec4792d56.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236587/e3d422f8-d6fd-45d3-8fb8-54ba077182fa.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236644/93e69eb0-4c3e-49e8-bcfa-d6cf9160bdcf.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236776/89c5a0b3-013c-4e53-8cb8-d4cbd2b158cc.png\"\n    ]\n  },\n  {\n    \"id\": 8,\n    \"title\": \"Стрельба из лука\",\n    \"text\": \"Почувствуйте себя настоящим лучником! На нашей территории оборудована безопасная зона для стрельбы из лука с мишенями.\",\n    \"description\": \"В распоряжении гостей — классические луки и стрелы, мягкие маты и мишени. Зона огорожена и безопасна для всех участников. Подходит как для взрослых, так и для детей с 10 лет. При необходимости инструктор подскажет базовые техники и поможет новичкам.\",\n    \"cost\": 500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236935/338cc42c-c394-4761-836a-d0dce49261d6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237016/19b40372-5631-4c1d-9437-a55d1aa90ad2.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236994/c05ce059-39e7-4646-8a17-a106d4df5168.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237079/776b7fe2-d522-4182-a7f4-9a0fd7fd613e.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237052/63ec1378-24ca-4c87-a635-6d8a76f9a9bf.png\"\n    ]\n  },\n  {\n    \"id\": 9,\n    \"title\": \"Игры на свежем воздухе\",\n    \"text\": \"Весело проводите время на природе! У нас есть всё необходимое для активных игр в компании друзей или всей семьёй.\",\n    \"description\": \"В вашем распоряжении: волейбольный мяч, набор для бадминтона, дартс и игра «Твистер». Все инвентарь можно получить у администратора. Просторная лужайка подойдёт для любых активностей — от подвижных игр до пикника.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237199/8da0aa89-19e2-43da-9a15-024db4dacbd6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237227/52303c79-ccfa-4b91-85eb-b869102a9889.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237371/b8120353-af8a-473a-b9c9-3550724f9f77.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237462/fe51e667-655e-4e24-812f-62f25a7a4d3a.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237384/c5b9d4b2-c9a3-4988-84de-dcf3eb0d8658.png\"\n    ]\n  }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/extras",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete extra",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/extas/{{extraID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extas",
+								"{{extraID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all extras",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/extras",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update extra info",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Прокат велосипедов\",\n    \"text\": \"Отправьтесь в увлекательное путешествие по лесным тропам и живописным маршрутам на велосипеде. Прокат двухколесного транспорта — отличный способ активно провести время, наслаждаясь свежим воздухом и природными пейзажами.\",\n    \"description\": \"У нас доступны горные, городские и детские велосипеды. Прокат подойдёт как для взрослых, так и для детей старше 7 лет. Поход на велосипеде подарит отличное настроение и поможет открыть новые маршруты вокруг.\",\n    \"cost\": 3000,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235095/card1_icxgcb.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235761/images2_ef3bzc.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235734/images3_jkqdi9.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235762/images1_d6qdkq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images4_uu6kjg.jpg\"\n    ]\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/extras/{{extraID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras",
+								"{{extraID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add extra",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"id\": 1,\n    \"title\": \"Прокат велосипедов\",\n    \"text\": \"Отправьтесь в увлекательное путешествие по лесным тропам и живописным маршрутам на велосипеде. Прокат двухколесного транспорта — отличный способ активно провести время, наслаждаясь свежим воздухом и природными пейзажами.\",\n    \"description\": \"У нас доступны горные, городские и детские велосипеды. Прокат подойдёт как для взрослых, так и для детей старше 7 лет. Поход на велосипеде подарит отличное настроение и поможет открыть новые маршруты вокруг.\",\n    \"cost\": 300,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235095/card1_icxgcb.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235761/images2_ef3bzc.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235734/images3_jkqdi9.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235762/images1_d6qdkq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images4_uu6kjg.jpg\"\n    ]\n  },\n  {\n    \"id\": 2,\n    \"title\": \"Фотограф\",\n    \"text\": \"Сохраните лучшие моменты вашего отдыха с помощью профессиональной фотосессии. Уют природы, свет заката и ваша искренняя улыбка — идеальный рецепт красивых кадров. Сохраните прекрасные воспоминания о проведённом времени.\",\n    \"description\": \"Услуга профессионального фотографа для индивидуальных, парных или семейных фотосессий на территории глэмпинга. Возможна съёмка в доме, у бани, на фоне природы или во время активных развлечений.\",\n    \"cost\": 2500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326073/a3b1d45c-1a88-45a5-b841-767c23dd96cc.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326317/a9dbff94-b0f5-4974-9c49-b8679e0ffc38.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326474/559f8efe-1e04-4d38-8317-c0fd943b5364.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326547/ec6dbbf8-bd9c-4349-ad20-8e0caa1dff10.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747326640/c2fd09d3-e2a7-4d9a-b5ee-caf6d2b2e35d.png\"\n    ]\n  },\n  {\n    \"id\": 3,\n    \"title\": \"Квадроциклы\",\n    \"text\": \"Почувствуйте азарт и свободу, отправившись в захватывающую поездку на квадроцикле по лесным тропам. Это отличный способ получить яркие эмоции, исследовать живописные окрестности и насладиться драйвом активного отдыха.\",\n    \"description\": \"В нашем прокате есть одиночные и двухместные квадроциклы. Катание подойдёт для подростков от 16 лет и взрослых, включая новичков. Мы предоставляем экипировку и короткий инструктаж перед поездкой.\",\n    \"cost\": 1500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235096/card3_yjcfsk.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235733/images9_tbmrxd.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images12_wlmvpq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235708/images11_j1ubto.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235708/images10_dioxvn.jpg\"\n    ]\n  },\n  {\n    \"id\": 4,\n    \"title\": \"Катание на сапах\",\n    \"text\": \"Исследуйте живописные окрестности с воды, наслаждаясь прогулкой на сапборде по спокойному озеру. Это отличный способ почувствовать единение с природой, расслабиться и провести время с удовольствием, скользя по глади воды под лучами солнца.\",\n    \"description\": \"Сапборды подойдут как новичкам, так и опытным райдерам. У нас есть доски разных размеров для взрослых и подростков от 10 лет. Инструктор поможет освоить основы управления и обеспечит безопасность на воде.\",\n    \"cost\": 1000,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235098/card4_zz7jcr.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images14_s0l5hy.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images15_j7faha.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235709/images13_wgce0u.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235735/images16_jql4vm.jpg\"\n    ]\n  },\n  {\n    \"id\": 5,\n    \"title\": \"Звёздные вечера\",\n    \"text\": \"Откройте для себя красоту ночного неба, наблюдая за звездами и планетами через телескоп. Вдали от городских огней можно увидеть тысячи сияющих созвездий и почувствовать магию бескрайней вселенной.\",\n    \"description\": \"Для наблюдения используются современные телескопы с увеличением до 100 крат. Подходит для всей семьи, особенно для детей старше 6 лет. Наш гид расскажет интересные факты о звёздах и космосе.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235099/card5_a6ul9o.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235738/images18_kxvu6n.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235737/images17_mtqduq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images19_xmqcy0.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235711/images20_u4fi3k.webp\"\n    ]\n  },\n  {\n    \"id\": 6,\n    \"title\": \"Катание на лошадях\",\n    \"text\": \"Погрузитесь в атмосферу спокойствия и умиротворения, отправившись в прогулку верхом на лошади по живописным лесным тропам и лугам. Общение с животными подарит массу положительных эмоций.\",\n    \"description\": \"В нашем конном клубе есть спокойные и дружелюбные лошади разных пород. Прогулки возможны как для взрослых, так и для детей от 7 лет. Опытные инструкторы сопровождают и обеспечивают безопасность во время катания.\",\n    \"cost\": 1200,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235093/card6_rd3fjf.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235712/images22_ekdxda.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235713/images23_vpatsc.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235711/images21_rzu1ov.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235713/images24_v4swrr.jpg\"\n    ]\n  },\n  {\n    \"id\": 7,\n    \"title\": \"Мангал\",\n    \"text\": \"Насладитесь приготовлением любимых блюд на открытом огне. У каждого домика установлен индивидуальный мангал для комфортного отдыха с шашлыком или грилем.\",\n    \"description\": \"Все наши домики оборудованы собственными мангалами. Вы можете привезти свои продукты или воспользоваться нашими наборами для барбекю. Мы предоставляем решётки, уголь и розжиг по запросу. Уютная зона рядом с мангалом позволяет с комфортом провести вечер на свежем воздухе.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236716/cbd53ddd-b789-4f61-8669-10a074e316a6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236743/f0a50356-f452-4576-a7c8-241ec4792d56.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236587/e3d422f8-d6fd-45d3-8fb8-54ba077182fa.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236644/93e69eb0-4c3e-49e8-bcfa-d6cf9160bdcf.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236776/89c5a0b3-013c-4e53-8cb8-d4cbd2b158cc.png\"\n    ]\n  },\n  {\n    \"id\": 8,\n    \"title\": \"Стрельба из лука\",\n    \"text\": \"Почувствуйте себя настоящим лучником! На нашей территории оборудована безопасная зона для стрельбы из лука с мишенями.\",\n    \"description\": \"В распоряжении гостей — классические луки и стрелы, мягкие маты и мишени. Зона огорожена и безопасна для всех участников. Подходит как для взрослых, так и для детей с 10 лет. При необходимости инструктор подскажет базовые техники и поможет новичкам.\",\n    \"cost\": 500,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236935/338cc42c-c394-4761-836a-d0dce49261d6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237016/19b40372-5631-4c1d-9437-a55d1aa90ad2.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747236994/c05ce059-39e7-4646-8a17-a106d4df5168.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237079/776b7fe2-d522-4182-a7f4-9a0fd7fd613e.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237052/63ec1378-24ca-4c87-a635-6d8a76f9a9bf.png\"\n    ]\n  },\n  {\n    \"id\": 9,\n    \"title\": \"Игры на свежем воздухе\",\n    \"text\": \"Весело проводите время на природе! У нас есть всё необходимое для активных игр в компании друзей или всей семьёй.\",\n    \"description\": \"В вашем распоряжении: волейбольный мяч, набор для бадминтона, дартс и игра «Твистер». Все инвентарь можно получить у администратора. Просторная лужайка подойдёт для любых активностей — от подвижных игр до пикника.\",\n    \"cost\": 0,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237199/8da0aa89-19e2-43da-9a15-024db4dacbd6.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237227/52303c79-ccfa-4b91-85eb-b869102a9889.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237371/b8120353-af8a-473a-b9c9-3550724f9f77.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237462/fe51e667-655e-4e24-812f-62f25a7a4d3a.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237384/c5b9d4b2-c9a3-4988-84de-dcf3eb0d8658.png\"\n    ]\n  }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/extras",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete extra",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/extas/{{extraID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extas",
+								"{{extraID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all extras",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/extras",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update extra info",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Прокат велосипедов\",\n    \"text\": \"Отправьтесь в увлекательное путешествие по лесным тропам и живописным маршрутам на велосипеде. Прокат двухколесного транспорта — отличный способ активно провести время, наслаждаясь свежим воздухом и природными пейзажами.\",\n    \"description\": \"У нас доступны горные, городские и детские велосипеды. Прокат подойдёт как для взрослых, так и для детей старше 7 лет. Поход на велосипеде подарит отличное настроение и поможет открыть новые маршруты вокруг.\",\n    \"cost\": 3000,\n    \"images\": [\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235095/card1_icxgcb.png\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235761/images2_ef3bzc.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235734/images3_jkqdi9.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235762/images1_d6qdkq.jpg\",\n      \"https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747235728/images4_uu6kjg.jpg\"\n    ]\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/extras/{{extraID}}",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"extras",
+								"{{extraID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
 		{
 			"key": "local",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "houseID",
+			"value": "1",
+			"type": "default"
+		},
+		{
+			"key": "extraID",
 			"value": "",
 			"type": "default"
 		}

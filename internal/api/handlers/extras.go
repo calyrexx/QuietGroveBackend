@@ -70,7 +70,7 @@ func (h *Extras) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "house created"})
+	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "extras created"})
 }
 
 func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +88,8 @@ func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.ID = id
+
 	if err = h.controller.Update(ctx, req); err != nil {
 		status := http.StatusInternalServerError
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
@@ -98,7 +100,7 @@ func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJSON(w, http.StatusOK, map[string]string{"message": "house updated"})
+	api.WriteJSON(w, http.StatusOK, map[string]string{"message": "extra updated"})
 }
 
 func (h *Extras) Delete(w http.ResponseWriter, r *http.Request) {

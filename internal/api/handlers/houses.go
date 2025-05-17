@@ -71,7 +71,7 @@ func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "house created"})
+	api.WriteJSON(w, http.StatusCreated, map[string]string{"message": "houses created"})
 }
 
 func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
