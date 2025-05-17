@@ -107,41 +107,49 @@ func (r *HousesRepo) GetOne(ctx context.Context, id int) (entities.House, error)
 	return house, nil
 }
 
-func (r *HousesRepo) Add(ctx context.Context, house entities.House) error {
+func (r *HousesRepo) Add(ctx context.Context, houses []entities.House) error {
 	const method = "housesRepo.Add"
+	batch := &pgx.Batch{}
+
 	query := `
 		INSERT INTO houses (
-		    id,
+			id,
 			name,
-		    description,
-		                    
+			description,
 			capacity,
 			base_price,
-		                    
 			images,
-		                    
 			check_in_from,
 			check_out_until
 		)
 		VALUES (
-			$1, $2, $3, 
-		    $4, $5,
-		    $6, 
-		    $7, $8
+			$1, $2, $3,
+			$4, $5,
+			$6,
+			$7, $8
 		)
 	`
 
-	if _, err := r.pool.Exec(ctx, query,
-		house.ID,
-		house.Name,
-		house.Description,
-		house.Capacity,
-		house.BasePrice,
-		house.Images,
-		house.CheckInFrom,
-		house.CheckOutUntil,
-	); err != nil {
-		return errorspkg.NewErrRepoFailed("pool.Exec", method, err)
+	for _, house := range houses {
+		batch.Queue(query,
+			house.ID,
+			house.Name,
+			house.Description,
+			house.Capacity,
+			house.BasePrice,
+			house.Images,
+			house.CheckInFrom,
+			house.CheckOutUntil,
+		)
+	}
+
+	br := r.pool.SendBatch(ctx, batch)
+	defer br.Close()
+
+	for i := 0; i < len(houses); i++ {
+		if _, err := br.Exec(); err != nil {
+			return errorspkg.NewErrRepoFailed("batch.Exec", method, err)
+		}
 	}
 
 	return nil

@@ -9,7 +9,7 @@ import (
 
 type IHousesUseCase interface {
 	GetAll(ctx context.Context) ([]entities.House, error)
-	Add(ctx context.Context, house entities.House) error
+	Add(ctx context.Context, houses []entities.House) error
 	Update(ctx context.Context, house entities.House) error
 	Delete(ctx context.Context, houseID int) error
 }
@@ -40,8 +40,12 @@ func (c *Houses) GetAll(ctx context.Context) ([]handlers.House, error) {
 	return c.convertEntitiesToHouses(res), nil
 }
 
-func (c *Houses) Add(ctx context.Context, house handlers.House) error {
-	return c.useCase.Add(ctx, c.convertHouseToEntity(house))
+func (c *Houses) Add(ctx context.Context, houses []handlers.House) error {
+	if len(houses) == 0 {
+		return nil
+	}
+
+	return c.useCase.Add(ctx, c.convertHousesToEntity(houses))
 }
 
 func (c *Houses) Update(ctx context.Context, house entities.House) error {
@@ -73,15 +77,19 @@ func (c *Houses) convertEntityToHouse(entity entities.House) handlers.House {
 	}
 }
 
-func (c *Houses) convertHouseToEntity(house handlers.House) entities.House {
-	return entities.House{
-		ID:            house.ID,
-		Name:          house.Name,
-		Description:   house.Description,
-		Capacity:      house.Capacity,
-		BasePrice:     house.BasePrice,
-		Images:        house.Images,
-		CheckInFrom:   house.CheckInFrom,
-		CheckOutUntil: house.CheckOutUntil,
+func (c *Houses) convertHousesToEntity(houses []handlers.House) []entities.House {
+	resp := make([]entities.House, 0, len(houses))
+	for _, house := range houses {
+		resp = append(resp, entities.House{
+			ID:            house.ID,
+			Name:          house.Name,
+			Description:   house.Description,
+			Capacity:      house.Capacity,
+			BasePrice:     house.BasePrice,
+			Images:        house.Images,
+			CheckInFrom:   house.CheckInFrom,
+			CheckOutUntil: house.CheckOutUntil,
+		})
 	}
+	return resp
 }

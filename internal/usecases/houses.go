@@ -36,8 +36,8 @@ func (u *Houses) GetAll(ctx context.Context) ([]entities.House, error) {
 	return u.repo.GetAll(ctx)
 }
 
-func (u *Houses) Add(ctx context.Context, house entities.House) error {
-	return u.repo.Add(ctx, house)
+func (u *Houses) Add(ctx context.Context, houses []entities.House) error {
+	return u.repo.Add(ctx, houses)
 }
 
 func (u *Houses) Update(ctx context.Context, house entities.House) error {

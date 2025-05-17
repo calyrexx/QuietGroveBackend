@@ -56,8 +56,6 @@ func (r *GuestsRepo) FindOrCreate(ctx context.Context, guest entities.Guest) (re
 }
 
 func (r *GuestsRepo) findByEmail(ctx context.Context, req entities.Guest) (repository.Guest, error) {
-	const method = "guestsRepo.findByEmail"
-
 	query := `
 		SELECT uuid, name, email, phone 
 		FROM guests 
@@ -72,7 +70,7 @@ func (r *GuestsRepo) findByEmail(ctx context.Context, req entities.Guest) (repos
 		&guest.Phone,
 	)
 	if err != nil {
-		return guest, errorspkg.NewErrRepoFailed("QueryRow.Scan", method, err)
+		return guest, err
 	}
 
 	return guest, nil

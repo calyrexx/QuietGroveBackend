@@ -12,7 +12,7 @@ import (
 
 type IHousesControllers interface {
 	GetAll(ctx context.Context) ([]House, error)
-	Add(ctx context.Context, house House) error
+	Add(ctx context.Context, houses []House) error
 	Update(ctx context.Context, house entities.House) error
 	Delete(ctx context.Context, houseID int) error
 }
@@ -59,7 +59,7 @@ func (h *Houses) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req House
+	var req []House
 	if err := api.ReadJSON(r, &req); err != nil {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -88,6 +88,8 @@ func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
 		api.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+
+	req.ID = id
 
 	if err = h.controller.Update(ctx, req); err != nil {
 		status := http.StatusInternalServerError
