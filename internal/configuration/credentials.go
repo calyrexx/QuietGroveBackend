@@ -6,7 +6,8 @@ import (
 )
 
 type Credentials struct {
-	Postgres Postgres
+	Postgres    Postgres
+	TelegramBot TelegramBot
 }
 
 type Postgres struct {
@@ -20,6 +21,11 @@ type Postgres struct {
 	IdleConnection     time.Duration `yaml:"IdleConnection"`
 	LifeTimeConnection time.Duration `yaml:"LifeTimeConnection"`
 	JitterConnection   time.Duration `yaml:"JitterConnection"`
+}
+
+type TelegramBot struct {
+	Token        string `yaml:"Token"`
+	AdminChatIDs []int  `yaml:"AdminChatID"`
 }
 
 func NewCredentials() (*Credentials, error) {
@@ -36,6 +42,11 @@ func NewCredentials() (*Credentials, error) {
 	}
 
 	err = viperNew.UnmarshalKey("Postgres", &creds.Postgres)
+	if err != nil {
+		return nil, err
+	}
+
+	err = viperNew.UnmarshalKey("TelegramBot", &creds.TelegramBot)
 	if err != nil {
 		return nil, err
 	}

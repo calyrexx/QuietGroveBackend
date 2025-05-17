@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/integrations/telegram"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -35,7 +36,12 @@ func New(
 		return nil, err
 	}
 
-	usecases, err := NewUsecases(logger, config, repo)
+	tgBot, err := telegram.NewTelegramNotifier(&creds.TelegramBot)
+	if err != nil {
+		return nil, err
+	}
+
+	usecases, err := NewUsecases(logger, config, repo, tgBot)
 	if err != nil {
 		return nil, err
 	}

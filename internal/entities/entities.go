@@ -38,6 +38,17 @@ type (
 		Extras      []ReservationExtra
 	}
 
+	ReservationCreatedMessage struct {
+		House       string
+		GuestName   string
+		GuestPhone  string
+		CheckIn     time.Time // [checkIn, checkOut)
+		CheckOut    time.Time
+		GuestsCount int
+		TotalPrice  int
+		Extras      []ReservationExtra
+	}
+
 	ReservationExtra struct {
 		ExtraID  int
 		Quantity int

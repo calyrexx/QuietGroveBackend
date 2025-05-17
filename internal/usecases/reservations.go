@@ -13,12 +13,17 @@ import (
 const reservationStub = "confirmed"
 
 type (
+	Notifier interface {
+		ReservationCreated(res entities.ReservationCreatedMessage) error
+	}
+
 	ReservationDependencies struct {
 		ReservationRepo repository.IReservations
 		GuestRepo       repository.IGuests
 		HouseRepo       repository.IHouses
 		PCoefs          []configuration.PriceCoefficient
 		Logger          logrus.FieldLogger
+		Notifier        Notifier
 	}
 
 	Reservation struct {
@@ -27,6 +32,7 @@ type (
 		houseRepo       repository.IHouses
 		pCoefs          []configuration.PriceCoefficient
 		logger          logrus.FieldLogger
+		notifier        Notifier
 	}
 )
 
@@ -46,6 +52,9 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 	if d.PCoefs == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "PCoefs", "nil")
 	}
+	if d.Notifier == nil {
+		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "Notifier", "nil")
+	}
 
 	logger := d.Logger.WithField("Usecases", "Reservation")
 
@@ -55,6 +64,7 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 		houseRepo:       d.HouseRepo,
 		pCoefs:          d.PCoefs,
 		logger:          logger,
+		notifier:        d.Notifier,
 	}, nil
 }
 
@@ -129,6 +139,23 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 	if err = u.reservationRepo.Create(ctx, reservation); err != nil {
 		return response, err
 	}
+
+	go func(res entities.Reservation) {
+		house, _ := u.houseRepo.GetOne(context.Background(), res.HouseID)
+
+		reservationMsg := entities.ReservationCreatedMessage{
+			House:       house.Name,
+			GuestName:   guest.Name,
+			GuestPhone:  guest.Phone,
+			CheckIn:     res.CheckIn,
+			CheckOut:    res.CheckOut,
+			GuestsCount: res.GuestsCount,
+			TotalPrice:  res.TotalPrice,
+		}
+		if errSend := u.notifier.ReservationCreated(reservationMsg); errSend != nil {
+			u.logger.Errorf("telegram notify error: %v", err)
+		}
+	}(reservation)
 
 	return reservation, nil
 }
