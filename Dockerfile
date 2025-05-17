@@ -9,16 +9,16 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /quietgroove ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /quietgrove ./cmd/main.go
 
 FROM alpine:3.19
 
 WORKDIR /app
 
-COPY --from=builder /quietgroove .
+COPY --from=builder /quietgrove .
 COPY configuration.yaml credentials.yaml ./
 COPY deploy/postgres.sql ./deploy/postgres.sql
 
 EXPOSE 8080
 
-CMD ["./quietgroove"]
+CMD ["./quietgrove"]
