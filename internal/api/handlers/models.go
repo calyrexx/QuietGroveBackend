@@ -47,4 +47,9 @@ type (
 		Quantity int `json:"quantity"`
 		Amount   int `json:"amount"`
 	}
+
+	VerifyRequest struct {
+		Email string `json:"email"`
+		Phone string `json:"phone"`
+	}
 )

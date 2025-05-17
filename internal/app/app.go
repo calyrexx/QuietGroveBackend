@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/integrations/telegram"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -11,6 +12,7 @@ import (
 type App struct {
 	repo        *Registry
 	rest        *Rest
+	notifier    *telegram.Adapter
 	appCron     *AppCron
 	controllers *Controllers
 	usecases    *Usecases
@@ -35,10 +37,17 @@ func New(
 		return nil, err
 	}
 
-	usecases, err := NewUsecases(logger, config, repo)
+	tgBot, err := telegram.NewAdapter(&creds.TelegramBot)
 	if err != nil {
 		return nil, err
 	}
+
+	usecases, err := NewUsecases(logger, config, repo, tgBot)
+	if err != nil {
+		return nil, err
+	}
+
+	tgBot.RegisterHandlers(usecases.verification)
 
 	controllers, err := NewControllers(logger, usecases)
 	if err != nil {
@@ -66,6 +75,7 @@ func New(
 		appCron:     appCron,
 		controllers: controllers,
 		usecases:    usecases,
+		notifier:    tgBot,
 	}, nil
 }
 
@@ -82,6 +92,12 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	go func() {
 		defer wg.Done()
 		err = a.appCron.Start(ctx)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		a.notifier.Run(ctx)
 	}()
 
 	return err

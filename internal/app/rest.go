@@ -56,12 +56,21 @@ func NewRest(
 		return nil, err
 	}
 
+	verificationHandler, err := handlers.NewVerification(handlers.VerificationDependencies{
+		Controller: controllers.Verification,
+		Logger:     logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	router := api.NewRouter(api.RouterDependencies{
 		Handlers: api.Handlers{
 			Reservations: reservationsHandler,
 			Houses:       housesHandler,
 			Extras:       extrasHandler,
 			General:      general,
+			Verification: verificationHandler,
 		},
 		Middlewares: api.Middlewares{
 			PanicRecovery: panicRecoveryMiddleware.Middleware,
