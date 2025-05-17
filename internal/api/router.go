@@ -7,13 +7,14 @@ import (
 )
 
 const (
-	healthPath      = "/health"
-	versionPath     = "/version"
-	housesPath      = "/houses"
-	extrasPath      = "/extras"
-	reservationPath = "/reservation"
-	idPath          = "/{id}"
-	emptyPath       = ""
+	healthPath       = "/health"
+	versionPath      = "/version"
+	housesPath       = "/houses"
+	extrasPath       = "/extras"
+	reservationPath  = "/reservation"
+	verificationPath = "/verification"
+	idPath           = "/{id}"
+	emptyPath        = ""
 )
 
 type Middlewares struct {
@@ -39,6 +40,10 @@ type IExtras interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 }
 
+type IVerification interface {
+	VerifyIdentity(w http.ResponseWriter, r *http.Request)
+}
+
 type IGeneral interface {
 	Health(w http.ResponseWriter, r *http.Request)
 	Version(w http.ResponseWriter, r *http.Request)
@@ -48,6 +53,7 @@ type Handlers struct {
 	Reservations IReservations
 	Houses       IHouses
 	Extras       IExtras
+	Verification IVerification
 	General      IGeneral
 }
 
@@ -67,6 +73,8 @@ func NewRouter(dep RouterDependencies) http.Handler {
 
 	r.HandleFunc(healthPath, dep.Handlers.General.Health)
 	r.HandleFunc(versionPath, dep.Handlers.General.Version)
+
+	r.HandleFunc(versionPath, dep.Handlers.Verification.VerifyIdentity).Methods("POST")
 
 	reservations := r.PathPrefix(reservationPath).Subrouter()
 	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.GetAvailableHouses).Methods(http.MethodGet)

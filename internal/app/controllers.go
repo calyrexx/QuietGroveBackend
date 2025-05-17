@@ -9,6 +9,7 @@ type Controllers struct {
 	Reservations *controllers.Reservations
 	Houses       *controllers.Houses
 	Extras       *controllers.Extras
+	Verification *controllers.Verification
 }
 
 func NewControllers(
@@ -37,9 +38,17 @@ func NewControllers(
 		return nil, err
 	}
 
+	verificationController, err := controllers.NewVerification(&controllers.VerificationDependencies{
+		UseCase: usecases.verification,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &Controllers{
 		Reservations: reservationsController,
 		Houses:       housesController,
 		Extras:       extrasController,
+		Verification: verificationController,
 	}, nil
 }
