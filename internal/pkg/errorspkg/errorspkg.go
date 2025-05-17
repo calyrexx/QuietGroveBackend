@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrInternalService = errors.New("internal service error")
+	ErrInternalService         = errors.New("internal service error")
+	ErrInvalidVerificationCode = errors.New("code expired or invalid")
 )
 
 type ErrViperReadInConfig struct {

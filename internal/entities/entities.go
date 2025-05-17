@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-const DateFormat = "2006-01-02"
+const (
+	VerifPending  VerificationStatus = "pending"
+	VerifApproved VerificationStatus = "approved"
+	VerifExpired  VerificationStatus = "expired"
+)
 
 type (
 	House struct {
@@ -90,5 +94,19 @@ type (
 		HouseId  int
 		CheckIn  time.Time
 		CheckOut time.Time
+	}
+
+	VerificationStatus string
+
+	Verification struct {
+		ID         int64
+		Code       string
+		Email      string
+		Phone      string
+		TgUserID   *int64
+		Status     VerificationStatus
+		CreatedAt  time.Time
+		VerifiedAt *time.Time
+		ExpiresAt  time.Time
 	}
 )

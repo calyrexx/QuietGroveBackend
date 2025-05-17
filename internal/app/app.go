@@ -12,6 +12,7 @@ import (
 type App struct {
 	repo        *Registry
 	rest        *Rest
+	notifier    *telegram.Adapter
 	appCron     *AppCron
 	controllers *Controllers
 	usecases    *Usecases
@@ -36,7 +37,7 @@ func New(
 		return nil, err
 	}
 
-	tgBot, err := telegram.NewTelegramNotifier(&creds.TelegramBot)
+	tgBot, err := telegram.NewAdapter(&creds.TelegramBot)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +46,8 @@ func New(
 	if err != nil {
 		return nil, err
 	}
+
+	tgBot.RegisterHandlers(usecases.verification)
 
 	controllers, err := NewControllers(logger, usecases)
 	if err != nil {
@@ -88,6 +91,12 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	go func() {
 		defer wg.Done()
 		err = a.appCron.Start(ctx)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		a.notifier.Run(ctx)
 	}()
 
 	return err

@@ -104,6 +104,20 @@ CREATE TABLE IF NOT EXISTS blackouts (
     )
 );
 ------------------------------------------------------------
+-- Верификация пользователя
+CREATE TABLE verifications (
+    id           bigserial  PRIMARY KEY,
+    code         char(6)    NOT NULL UNIQUE,
+    email        text       NOT NULL,
+    phone        text       NOT NULL,
+    tg_user_id   bigint,
+    status       text       NOT NULL,
+    created_at   timestamptz DEFAULT now(),
+    verified_at  timestamptz,
+    expires_at   timestamptz NOT NULL
+);
+CREATE INDEX idx_verifications_code ON verifications(code);
+------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS reservations_active_idx
     ON reservations
     USING gist (house_id, stay);
