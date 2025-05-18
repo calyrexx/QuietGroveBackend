@@ -52,11 +52,14 @@ func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) err
 	)
 
 	for _, chatID := range a.adminChatIDs {
-		if _, err := a.bot.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID:    chatID,
-			Text:      text,
-			ParseMode: "Markdown",
-		}); err != nil {
+		_, err := a.bot.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID:    chatID,
+				Text:      text,
+				ParseMode: "Markdown",
+			},
+		)
+		if err != nil {
 			return err
 		}
 	}
@@ -66,10 +69,12 @@ func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) err
 func (a *Adapter) RegisterHandlers(ver *usecases.Verification) {
 	a.verifSvc = ver
 
-	re := regexp.MustCompile(`^\d{6}$`)
-	a.bot.RegisterHandlerRegexp(
-		bot.HandlerTypeMessageText,
-		re,
+	onlyDigits := regexp.MustCompile(`^\d+$`)
+
+	a.bot.RegisterHandlerMatchFunc(
+		func(u *models.Update) bool {
+			return onlyDigits.MatchString(u.Message.Text)
+		},
 		a.codeHandler,
 	)
 }
@@ -78,15 +83,38 @@ func (a *Adapter) codeHandler(ctx context.Context, b *bot.Bot, u *models.Update)
 	code := u.Message.Text
 	tgID := u.Message.Chat.ID
 
-	if err := a.verifSvc.Approve(ctx, code, tgID); err != nil {
-		_, err = b.SendMessage(ctx, &bot.SendMessageParams{ChatID: tgID, Text: "❌ Код неверный или устарел"})
+	if len(code) != 6 {
+		_, err := b.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID: tgID,
+				Text:   "⚠️ Код должен содержать 6 цифр",
+			},
+		)
 		if err != nil {
 			return
 		}
 		return
 	}
 
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{ChatID: tgID, Text: "✅ Личность подтверждена!"})
+	if err := a.verifSvc.Approve(ctx, code, tgID); err != nil {
+		_, err = b.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID: tgID,
+				Text:   "❌ Код неверный или устарел",
+			},
+		)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	_, err := b.SendMessage(ctx,
+		&bot.SendMessageParams{
+			ChatID: tgID,
+			Text:   "✅ Личность подтверждена!",
+		},
+	)
 	if err != nil {
 		return
 	}
