@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/api/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -66,6 +67,7 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r := mux.NewRouter()
 
 	r.Use(dep.Middlewares.PanicRecovery.Middleware)
+	r.Use(middleware.WithCORS)
 
 	r.HandleFunc("*", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.URL)

@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
 	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/utils"
 	"github.com/gorilla/mux"
 	"time"
 
@@ -35,7 +35,7 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				panicErr := errorspkg.NewErrPanicWrapper(err)
 				mw.logger.Error(panicErr)
-				api.WriteError(w, http.StatusInternalServerError, errorspkg.ErrInternalService)
+				utils.WriteError(w, http.StatusInternalServerError, errorspkg.ErrInternalService)
 				return
 			}
 		}()
