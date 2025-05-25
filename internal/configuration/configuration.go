@@ -1,10 +1,10 @@
 package configuration
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"log/slog"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -16,7 +16,7 @@ type Config struct {
 }
 
 type Logger struct {
-	Level logrus.Level `yaml:"Level"`
+	Level slog.Level `yaml:"Level"`
 }
 
 type PriceCoefficient struct {

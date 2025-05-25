@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"log/slog"
 	"net/http"
 )
 
@@ -14,12 +14,12 @@ type IVerificationController interface {
 
 type VerificationDependencies struct {
 	Controller IVerificationController
-	Logger     logrus.FieldLogger
+	Logger     *slog.Logger
 }
 
 type Verification struct {
 	controller IVerificationController
-	logger     logrus.FieldLogger
+	logger     *slog.Logger
 }
 
 func NewVerification(dep VerificationDependencies) (*Verification, error) {
@@ -30,7 +30,7 @@ func NewVerification(dep VerificationDependencies) (*Verification, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("NewVerification", "Controller", "nil")
 	}
 
-	logger := dep.Logger.WithField("Handler", "Verification")
+	logger := dep.Logger.With("Handler", "Verification")
 
 	return &Verification{
 		controller: dep.Controller,
@@ -49,7 +49,7 @@ func (h *Verification) VerifyIdentity(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.controller.Generate(ctx, req.Email, req.Phone)
 	if err != nil {
-		h.logger.Errorf("Generate: %v", err)
+		h.logger.Error(err.Error(), "method", "VerifyIdentity")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}

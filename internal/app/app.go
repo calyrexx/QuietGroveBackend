@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/integrations/telegram"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/integrations/telegram"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"log/slog"
 	"sync"
 )
 
@@ -20,7 +20,7 @@ type App struct {
 
 func New(
 	ctx context.Context,
-	logger logrus.FieldLogger,
+	logger *slog.Logger,
 	version string,
 	config *configuration.Config,
 	creds *configuration.Credentials,

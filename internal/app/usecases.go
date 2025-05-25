@@ -1,10 +1,10 @@
 package app
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/integrations/telegram"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/integrations/telegram"
+	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
+	"log/slog"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type Usecases struct {
 }
 
 func NewUsecases(
-	logger logrus.FieldLogger,
+	logger *slog.Logger,
 	config *configuration.Config,
 	repo *Registry,
 	tgBot *telegram.Adapter,

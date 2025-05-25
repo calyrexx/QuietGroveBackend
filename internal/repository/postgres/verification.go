@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

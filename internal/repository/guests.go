@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/google/uuid"
 )
 

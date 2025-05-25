@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
+	"github.com/calyrexx/zeroslog"
 	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 	"log"
+	"log/slog"
 )
 
 type specFn struct {
@@ -18,11 +19,11 @@ type AppCron struct {
 	cron       *cron.Cron
 	fns        []specFn
 	fnsOnStart []cronFunc
-	logger     logrus.FieldLogger
+	logger     *slog.Logger
 }
 
-func NewAppCron(logger logrus.FieldLogger) (*AppCron, error) {
-	l := logger.WithField("service", "AppCron")
+func NewAppCron(logger *slog.Logger) (*AppCron, error) {
+	l := logger.With(zeroslog.ServiceKey, "AppCron")
 
 	m := make([]specFn, 0, 16)
 	mOnStart := make([]cronFunc, 0, 16)

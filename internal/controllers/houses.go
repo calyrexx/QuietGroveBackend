@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/handlers"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/handlers"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 )
 
 type IHousesUseCase interface {

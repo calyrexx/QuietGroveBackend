@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository/postgres"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

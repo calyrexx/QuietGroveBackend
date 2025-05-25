@@ -2,20 +2,21 @@ package usecases
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/zeroslog"
+	"log/slog"
 )
 
 type (
 	HousesDependencies struct {
 		Repo   repository.IHouses
-		Logger logrus.FieldLogger
+		Logger *slog.Logger
 	}
 	Houses struct {
 		repo   repository.IHouses
-		logger logrus.FieldLogger
+		logger *slog.Logger
 	}
 )
 
@@ -24,7 +25,7 @@ func NewHouses(d *HousesDependencies) (*Houses, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Houses", "whole", "nil")
 	}
 
-	logger := d.Logger.WithField("Usecases", "Houses")
+	logger := d.Logger.With(zeroslog.UsecaseKey, "Houses")
 
 	return &Houses{
 		repo:   d.Repo,

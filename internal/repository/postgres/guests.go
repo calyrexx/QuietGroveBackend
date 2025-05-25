@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

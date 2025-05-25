@@ -3,10 +3,10 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"log/slog"
 	"net/http"
 )
 
@@ -19,12 +19,12 @@ type IHousesControllers interface {
 
 type HousesDependencies struct {
 	Controller IHousesControllers
-	Logger     logrus.FieldLogger
+	Logger     *slog.Logger
 }
 
 type Houses struct {
 	controller IHousesControllers
-	logger     logrus.FieldLogger
+	logger     *slog.Logger
 }
 
 func NewHouses(dep HousesDependencies) (*Houses, error) {
@@ -35,7 +35,7 @@ func NewHouses(dep HousesDependencies) (*Houses, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("NewHouses", "Controller", "nil")
 	}
 
-	logger := dep.Logger.WithField("Handler", "Houses")
+	logger := dep.Logger.With("Handler", "Houses")
 
 	return &Houses{
 		controller: dep.Controller,
@@ -48,7 +48,7 @@ func (h *Houses) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	houses, err := h.controller.GetAll(ctx)
 	if err != nil {
-		h.logger.Errorf("get all: %v", err)
+		h.logger.Error(err.Error(), "method", "GetAll")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -66,7 +66,7 @@ func (h *Houses) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.controller.Add(ctx, req); err != nil {
-		h.logger.Errorf("add: %v", err)
+		h.logger.Error(err.Error(), "method", "Add")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -96,7 +96,7 @@ func (h *Houses) Update(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
 		}
-		h.logger.Errorf("update id=%d: %v", id, err)
+		h.logger.Error(err.Error(), "method", "Update")
 		api.WriteError(w, status, err)
 		return
 	}
@@ -118,7 +118,7 @@ func (h *Houses) Delete(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
 		}
-		h.logger.Errorf("delete id=%d: %v", id, err)
+		h.logger.Error(err.Error(), "method", "Delete")
 		api.WriteError(w, status, err)
 		return
 	}

@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/controllers"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/controllers"
+	"log/slog"
 )
 
 type Controllers struct {
@@ -13,7 +13,7 @@ type Controllers struct {
 }
 
 func NewControllers(
-	logger logrus.FieldLogger,
+	logger *slog.Logger,
 	usecases *Usecases,
 ) (*Controllers, error) {
 

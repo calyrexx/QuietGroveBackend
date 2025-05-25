@@ -3,15 +3,15 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 	"regexp"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
 )
 
 type Adapter struct {

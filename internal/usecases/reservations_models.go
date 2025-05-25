@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"time"
 )
 

@@ -32,14 +32,6 @@ DO $$
     EXCEPTION
         WHEN duplicate_object THEN NULL;
 END $$;
-
-DO $$
-    BEGIN
-        CREATE TYPE payment_status AS ENUM
-            ('pending','paid','failed','refunded');
-    EXCEPTION
-        WHEN duplicate_object THEN NULL;
-END $$;
 ------------------------------------------------------------
 -- Брони
 CREATE TABLE IF NOT EXISTS reservations (
@@ -57,18 +49,6 @@ CREATE TABLE IF NOT EXISTS reservations (
         house_id WITH =,
         stay WITH &&  -- «&&» — пересечение диапазонов
     )
-);
-------------------------------------------------------------
--- Платежи
-CREATE TABLE IF NOT EXISTS payments (
-    uuid uuid PRIMARY KEY,
-    reservation_uuid uuid REFERENCES reservations ON DELETE CASCADE,
-    amount numeric(10,2) NOT NULL,
-    currency char(3) DEFAULT 'RUB',
-    method text,
-    status payment_status NOT NULL,
-    gateway_tx_id text, -- id в платёжном шлюзе
-    paid_at timestamptz
 );
 ------------------------------------------------------------
 -- Доп. услуги

@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/middleware"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/middleware"
 	"github.com/gorilla/mux"
 	"net/http"
 )

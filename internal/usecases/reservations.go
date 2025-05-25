@@ -2,11 +2,12 @@ package usecases
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/zeroslog"
+	"log/slog"
 	"time"
 )
 
@@ -22,7 +23,7 @@ type (
 		GuestRepo       repository.IGuests
 		HouseRepo       repository.IHouses
 		PCoefs          []configuration.PriceCoefficient
-		Logger          logrus.FieldLogger
+		Logger          *slog.Logger
 		Notifier        Notifier
 	}
 
@@ -31,7 +32,7 @@ type (
 		guestRepo       repository.IGuests
 		houseRepo       repository.IHouses
 		pCoefs          []configuration.PriceCoefficient
-		logger          logrus.FieldLogger
+		logger          *slog.Logger
 		notifier        Notifier
 	}
 )
@@ -56,7 +57,7 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "Notifier", "nil")
 	}
 
-	logger := d.Logger.WithField("Usecases", "Reservation")
+	logger := d.Logger.With(zeroslog.UsecaseKey, "Reservation")
 
 	return &Reservation{
 		reservationRepo: d.ReservationRepo,
@@ -153,7 +154,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 			TotalPrice:  res.TotalPrice,
 		}
 		if errSend := u.notifier.ReservationCreated(reservationMsg); errSend != nil {
-			u.logger.Errorf("telegram notify error: %v", err)
+			u.logger.Error("telegram notify", zeroslog.ErrorKey, err)
 		}
 	}(reservation)
 

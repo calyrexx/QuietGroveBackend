@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
 	"github.com/gorilla/schema"
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"net/http"
 )
 
@@ -18,12 +18,12 @@ type IControllers interface {
 
 type ReservationsDependencies struct {
 	Controller IControllers
-	Logger     logrus.FieldLogger
+	Logger     *slog.Logger
 }
 
 type Reservations struct {
 	controller IControllers
-	logger     logrus.FieldLogger
+	logger     *slog.Logger
 }
 
 func NewReservations(dep ReservationsDependencies) (*Reservations, error) {
@@ -34,7 +34,7 @@ func NewReservations(dep ReservationsDependencies) (*Reservations, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("NewReservations", "Controller", "nil")
 	}
 
-	logger := dep.Logger.WithField("Handler", "Reservations")
+	logger := dep.Logger.With("Handler", "Reservations")
 
 	return &Reservations{
 		controller: dep.Controller,
@@ -55,7 +55,7 @@ func (h *Reservations) GetAvailableHouses(w http.ResponseWriter, r *http.Request
 
 	result, err := h.controller.GetAvailableHouses(ctx, req)
 	if err != nil {
-		h.logger.Errorf("getAvailable: %v", err)
+		h.logger.Error(err.Error(), "method", "GetAvailableHouses")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -74,7 +74,7 @@ func (h *Reservations) CreateReservation(w http.ResponseWriter, r *http.Request)
 
 	result, err := h.controller.CreateReservation(ctx, req)
 	if err != nil {
-		h.logger.Errorf("create: %v", err)
+		h.logger.Error(err.Error(), "method", "CreateReservation")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}

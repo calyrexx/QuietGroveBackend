@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 )
 
 type IVerificationUseCase interface {
