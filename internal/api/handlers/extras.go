@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"log/slog"
 	"net/http"
 )
 
@@ -18,12 +18,12 @@ type IExtrasControllers interface {
 
 type ExtrasDependencies struct {
 	Controller IExtrasControllers
-	Logger     logrus.FieldLogger
+	Logger     *slog.Logger
 }
 
 type Extras struct {
 	controller IExtrasControllers
-	logger     logrus.FieldLogger
+	logger     *slog.Logger
 }
 
 func NewExtras(dep ExtrasDependencies) (*Extras, error) {
@@ -34,7 +34,7 @@ func NewExtras(dep ExtrasDependencies) (*Extras, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("NewExtras", "Controller", "nil")
 	}
 
-	logger := dep.Logger.WithField("Handler", "Extras")
+	logger := dep.Logger.With("Handler", "Extras")
 
 	return &Extras{
 		controller: dep.Controller,
@@ -47,7 +47,7 @@ func (h *Extras) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	extras, err := h.controller.GetAll(ctx)
 	if err != nil {
-		h.logger.Errorf("get all: %v", err)
+		h.logger.Error(err.Error(), "method", "GetAll")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -65,7 +65,7 @@ func (h *Extras) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.controller.Add(ctx, req); err != nil {
-		h.logger.Errorf("add: %v", err)
+		h.logger.Error(err.Error(), "method", "Add")
 		api.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -95,7 +95,7 @@ func (h *Extras) Update(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
 		}
-		h.logger.Errorf("update id=%d: %v", id, err)
+		h.logger.Error(err.Error(), "method", "Update")
 		api.WriteError(w, status, err)
 		return
 	}
@@ -117,7 +117,7 @@ func (h *Extras) Delete(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &errorspkg.ErrRepoNotFound{}) {
 			status = http.StatusNotFound
 		}
-		h.logger.Errorf("delete id=%d: %v", id, err)
+		h.logger.Error(err.Error(), "method", "Delete")
 		api.WriteError(w, status, err)
 		return
 	}

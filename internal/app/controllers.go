@@ -1,19 +1,20 @@
 package app
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/controllers"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/controllers"
+	"log/slog"
 )
 
 type Controllers struct {
 	Reservations *controllers.Reservations
 	Houses       *controllers.Houses
+	Bathhouses   *controllers.Bathhouses
 	Extras       *controllers.Extras
 	Verification *controllers.Verification
 }
 
 func NewControllers(
-	logger logrus.FieldLogger,
+	logger *slog.Logger,
 	usecases *Usecases,
 ) (*Controllers, error) {
 
@@ -26,6 +27,13 @@ func NewControllers(
 
 	housesController, err := controllers.NewHouses(&controllers.HousesDependencies{
 		UseCase: usecases.houses,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	bathhousesController, err := controllers.NewBathhouses(&controllers.BathhousesDependencies{
+		UseCase: usecases.bathhouses,
 	})
 	if err != nil {
 		return nil, err
@@ -48,6 +56,7 @@ func NewControllers(
 	return &Controllers{
 		Reservations: reservationsController,
 		Houses:       housesController,
+		Bathhouses:   bathhousesController,
 		Extras:       extrasController,
 		Verification: verificationController,
 	}, nil

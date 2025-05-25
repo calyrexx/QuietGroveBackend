@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/handlers"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/handlers"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 )
 
 type IExtrasUseCase interface {
@@ -24,7 +24,7 @@ type Extras struct {
 
 func NewExtras(d *ExtrasDependencies) (*Extras, error) {
 	if d.UseCase == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Extras UseCase", "whole", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies("Extras Controller", "whole", "nil")
 	}
 	return &Extras{
 		useCase: d.UseCase,

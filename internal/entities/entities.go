@@ -40,6 +40,7 @@ type (
 		CreatedAt   time.Time
 		UpdatedAt   time.Time
 		Extras      []ReservationExtra
+		Bathhouse   []BathhouseReservation
 	}
 
 	ReservationCreatedMessage struct {
@@ -51,12 +52,21 @@ type (
 		GuestsCount int
 		TotalPrice  int
 		Extras      []ReservationExtra
+		Bathhouse   []BathhouseMessage
 	}
 
 	ReservationExtra struct {
 		ExtraID  int
 		Quantity int
 		Amount   int
+	}
+
+	BathhouseMessage struct {
+		Name       string
+		Date       string
+		TimeFrom   string
+		TimeTo     string
+		FillOption *string
 	}
 
 	Extra struct {
@@ -80,8 +90,9 @@ type (
 	}
 
 	GetPrice struct {
-		House  int
-		Extras int
+		House     int
+		Extras    int
+		Bathhouse int
 	}
 
 	GetAvailableHouses struct {
@@ -103,10 +114,38 @@ type (
 		Code       string
 		Email      string
 		Phone      string
+		Name       string
 		TgUserID   *int64
 		Status     VerificationStatus
 		CreatedAt  time.Time
 		VerifiedAt *time.Time
 		ExpiresAt  time.Time
+	}
+
+	BathhouseReservation struct {
+		TypeID       int
+		Date         string
+		TimeFrom     string
+		TimeTo       string
+		FillOptionID int
+	}
+
+	Bathhouse struct {
+		ID          int
+		HouseID     int
+		Name        string
+		Price       int
+		Description string
+		Images      []string
+		FillOptions []BathhouseFillOption
+	}
+
+	BathhouseFillOption struct {
+		ID          int
+		BathhouseID int
+		Name        string
+		Image       string
+		Description string
+		Price       int
 	}
 )

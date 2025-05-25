@@ -3,15 +3,15 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 	"regexp"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
 )
 
 type Adapter struct {
@@ -50,6 +50,19 @@ func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) err
 		msg.CheckIn.Format("02.01.2006"), msg.CheckOut.Format("02.01.2006"),
 		msg.GuestsCount, msg.TotalPrice,
 	)
+
+	if len(msg.Bathhouse) > 0 {
+		text += "\n\n🔥 *Забронированы дополнительно:*"
+		for _, bath := range msg.Bathhouse {
+			text += fmt.Sprintf(
+				"\n- %s: %s с %s до %s",
+				bath.Name,
+				bath.Date, // TODO исправить на 02.01.2006
+				bath.TimeFrom,
+				bath.TimeTo,
+			)
+		}
+	}
 
 	for _, chatID := range a.adminChatIDs {
 		_, err := a.bot.SendMessage(ctx,

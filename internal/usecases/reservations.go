@@ -2,11 +2,12 @@ package usecases
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/zeroslog"
+	"log/slog"
 	"time"
 )
 
@@ -21,8 +22,9 @@ type (
 		ReservationRepo repository.IReservations
 		GuestRepo       repository.IGuests
 		HouseRepo       repository.IHouses
+		BathhouseRepo   repository.IBathhouses
 		PCoefs          []configuration.PriceCoefficient
-		Logger          logrus.FieldLogger
+		Logger          *slog.Logger
 		Notifier        Notifier
 	}
 
@@ -30,8 +32,9 @@ type (
 		reservationRepo repository.IReservations
 		guestRepo       repository.IGuests
 		houseRepo       repository.IHouses
+		bathhouseRepo   repository.IBathhouses
 		pCoefs          []configuration.PriceCoefficient
-		logger          logrus.FieldLogger
+		logger          *slog.Logger
 		notifier        Notifier
 	}
 )
@@ -49,6 +52,9 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 	if d.HouseRepo == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "HouseRepo", "nil")
 	}
+	if d.BathhouseRepo == nil {
+		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "BathhouseRepo", "nil")
+	}
 	if d.PCoefs == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "PCoefs", "nil")
 	}
@@ -56,12 +62,13 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "Notifier", "nil")
 	}
 
-	logger := d.Logger.WithField("Usecases", "Reservation")
+	logger := d.Logger.With(zeroslog.UsecaseKey, "Reservation")
 
 	return &Reservation{
 		reservationRepo: d.ReservationRepo,
 		guestRepo:       d.GuestRepo,
 		houseRepo:       d.HouseRepo,
+		bathhouseRepo:   d.BathhouseRepo,
 		pCoefs:          d.PCoefs,
 		logger:          logger,
 		notifier:        d.Notifier,
@@ -83,6 +90,8 @@ func (u *Reservation) GetAvailableHouses(ctx context.Context, req entities.GetAv
 		nights := int(req.CheckOut.Sub(req.CheckIn).Hours() / 24)
 		totalPrice := u.calculateTotalPrice(house.BasePrice, 0, req.CheckIn, req.CheckOut)
 		price := totalPrice / nights
+		// This is костыль
+		bathhouses, _ := u.bathhouseRepo.GetByHouse(ctx, id)
 		response = append(response, GetAvailableHousesResponse{
 			ID:            house.ID,
 			Name:          house.Name,
@@ -93,6 +102,7 @@ func (u *Reservation) GetAvailableHouses(ctx context.Context, req entities.GetAv
 			Images:        house.Images,
 			CheckInFrom:   house.CheckInFrom,
 			CheckOutUntil: house.CheckOutUntil,
+			Bathhouses:    u.convertBathhouseToSlots(bathhouses, req.CheckIn, req.CheckOut),
 		})
 	}
 
@@ -119,7 +129,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		return response, err
 	}
 
-	basePrice, err := u.reservationRepo.GetPrice(ctx, req.HouseID, req.Extras)
+	basePrice, err := u.reservationRepo.GetPrice(ctx, req.HouseID, req.Extras, req.Bathhouse)
 	if err != nil {
 		return response, err
 	}
@@ -134,6 +144,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		GuestsCount: req.GuestsCount,
 		Status:      reservationStub,
 		TotalPrice:  totalPrice,
+		Bathhouse:   req.Bathhouse,
 	}
 
 	if err = u.reservationRepo.Create(ctx, reservation); err != nil {
@@ -142,6 +153,17 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 
 	go func(res entities.Reservation) {
 		house, _ := u.houseRepo.GetOne(context.Background(), res.HouseID)
+		bathhouseMsg := make([]entities.BathhouseMessage, 0, len(res.Bathhouse))
+		for _, reqBh := range req.Bathhouse {
+			bh, _ := u.bathhouseRepo.GetByID(context.Background(), reqBh.TypeID)
+			bathhouseMsg = append(bathhouseMsg, entities.BathhouseMessage{
+				Name:     bh.Name,
+				Date:     reqBh.Date,
+				TimeFrom: reqBh.TimeFrom,
+				TimeTo:   reqBh.TimeTo,
+				// TODO продумать как передавать наполнение чана
+			})
+		}
 
 		reservationMsg := entities.ReservationCreatedMessage{
 			House:       house.Name,
@@ -151,9 +173,10 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 			CheckOut:    res.CheckOut,
 			GuestsCount: res.GuestsCount,
 			TotalPrice:  res.TotalPrice,
+			Bathhouse:   bathhouseMsg,
 		}
 		if errSend := u.notifier.ReservationCreated(reservationMsg); errSend != nil {
-			u.logger.Errorf("telegram notify error: %v", err)
+			u.logger.Error("telegram notify", zeroslog.ErrorKey, err)
 		}
 	}(reservation)
 
@@ -181,4 +204,48 @@ func (u *Reservation) calculateTotalPrice(basePrice, extrasPrice int, checkIn, c
 	}
 
 	return int(total) + extrasPrice
+}
+
+func (u *Reservation) convertBathhouseToSlots(req []entities.Bathhouse, checkIn, checkOut time.Time) []BathhouseSlots {
+	resp := make([]BathhouseSlots, 0, len(req))
+
+	defaultTimeSlot := BathhouseTimeSlots{
+		TimeFrom: "10:00",
+		TimeTo:   "21:00",
+	}
+
+	for _, b := range req {
+		days := int(checkOut.Sub(checkIn).Hours() / 24)
+		if days == 0 {
+			days = 1
+		}
+		dateSlots := make([]BathhouseDateSlots, 0, days)
+		for i := 0; i < days; i++ {
+			date := checkIn.AddDate(0, 0, i).Format("2006-01-02")
+			dateSlots = append(dateSlots, BathhouseDateSlots{
+				Date: date,
+				Time: []BathhouseTimeSlots{defaultTimeSlot},
+			})
+		}
+		resp = append(resp, BathhouseSlots{
+			TypeID:     b.ID,
+			Name:       b.Name,
+			Slots:      dateSlots,
+			FillOption: u.convertFillOptions(b.FillOptions),
+		})
+	}
+	return resp
+}
+
+func (u *Reservation) convertFillOptions(req []entities.BathhouseFillOption) []BathhouseFillOption {
+	resp := make([]BathhouseFillOption, 0, len(req))
+	for _, b := range req {
+		resp = append(resp, BathhouseFillOption{
+			ID:          b.ID,
+			Name:        b.Name,
+			Price:       b.Price,
+			Description: b.Description,
+		})
+	}
+	return resp
 }

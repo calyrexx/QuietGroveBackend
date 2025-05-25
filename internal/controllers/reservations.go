@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/handlers"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/usecases"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/handlers"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
 	"time"
 )
 
@@ -81,6 +81,7 @@ func (c *Reservations) convertCreateReservation(req handlers.CreateReservation) 
 		Guest:       c.convertGuest(req.Guest),
 		GuestsCount: req.GuestsCount,
 		Extras:      c.convertExtras(req.Extras),
+		Bathhouse:   c.convertBathouse(req.Bathhouse),
 	}
 	cITime, err := time.Parse(time.DateOnly, req.CheckIn)
 	if err != nil {
@@ -94,6 +95,20 @@ func (c *Reservations) convertCreateReservation(req handlers.CreateReservation) 
 	resp.CheckOut = cOTime
 
 	return resp, nil
+}
+
+func (c *Reservations) convertBathouse(bathhouse []handlers.BathhouseReservation) []entities.BathhouseReservation {
+	resp := make([]entities.BathhouseReservation, 0, len(bathhouse))
+	for _, b := range bathhouse {
+		resp = append(resp, entities.BathhouseReservation{
+			TypeID:       b.TypeID,
+			Date:         b.Date,
+			TimeFrom:     b.TimeFrom,
+			TimeTo:       b.TimeTo,
+			FillOptionID: b.FillOptionID,
+		})
+	}
+	return resp
 }
 
 func (c *Reservations) convertGuest(guest handlers.Guest) entities.Guest {

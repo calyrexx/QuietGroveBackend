@@ -2,11 +2,11 @@ package app
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/handlers"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/api/middleware"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/configuration"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/handlers"
+	"github.com/calyrexx/QuietGrooveBackend/internal/api/middleware"
+	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
+	"log/slog"
 )
 
 type Rest struct {
@@ -15,7 +15,7 @@ type Rest struct {
 
 func NewRest(
 	controllers *Controllers,
-	logger logrus.FieldLogger,
+	logger *slog.Logger,
 	config *configuration.HttpServer,
 	version string,
 ) (*Rest, error) {
@@ -48,6 +48,14 @@ func NewRest(
 		return nil, err
 	}
 
+	bathhousesHandler, err := handlers.NewBathhouses(handlers.BathhousesDependencies{
+		Controller: controllers.Bathhouses,
+		Logger:     logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	extrasHandler, err := handlers.NewExtras(handlers.ExtrasDependencies{
 		Controller: controllers.Extras,
 		Logger:     logger,
@@ -68,6 +76,7 @@ func NewRest(
 		Handlers: api.Handlers{
 			Reservations: reservationsHandler,
 			Houses:       housesHandler,
+			Bathhouses:   bathhousesHandler,
 			Extras:       extrasHandler,
 			General:      general,
 			Verification: verificationHandler,

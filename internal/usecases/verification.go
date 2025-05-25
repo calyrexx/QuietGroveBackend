@@ -4,9 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
 	"math/big"
 	"time"
 )
@@ -35,7 +35,7 @@ func NewVerification(d *VerificationDependencies) (*Verification, error) {
 	}, nil
 }
 
-func (s *Verification) Generate(ctx context.Context, email, phone string) (string, error) {
+func (s *Verification) Generate(ctx context.Context, email, phone, name string) (string, error) {
 	code := sixDigits()
 	exp := time.Now().Add(s.ttl)
 
@@ -43,6 +43,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone string) (strin
 		Code:      code,
 		Email:     email,
 		Phone:     phone,
+		Name:      name,
 		Status:    entities.VerifPending,
 		ExpiresAt: exp,
 	})

@@ -2,20 +2,21 @@ package usecases
 
 import (
 	"context"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/entities"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/repository"
-	"github.com/sirupsen/logrus"
+	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/repository"
+	"github.com/calyrexx/zeroslog"
+	"log/slog"
 )
 
 type (
 	ExtrasDependencies struct {
 		Repo   repository.IExtras
-		Logger logrus.FieldLogger
+		Logger *slog.Logger
 	}
 	Extras struct {
 		repo   repository.IExtras
-		logger logrus.FieldLogger
+		logger *slog.Logger
 	}
 )
 
@@ -24,7 +25,7 @@ func NewExtras(d *ExtrasDependencies) (*Extras, error) {
 		return nil, errorspkg.NewErrConstructorDependencies("Usecases Extras", "whole", "nil")
 	}
 
-	logger := d.Logger.WithField("Usecases", "Extras")
+	logger := d.Logger.With(zeroslog.UsecaseKey, "Extras")
 
 	return &Extras{
 		repo:   d.Repo,

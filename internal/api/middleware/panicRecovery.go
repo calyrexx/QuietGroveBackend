@@ -1,22 +1,23 @@
 package middleware
 
 import (
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/errorspkg"
-	"github.com/Calyr3x/QuietGrooveBackend/internal/pkg/utils"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
+	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/utils"
+	"github.com/calyrexx/zeroslog"
 	"github.com/gorilla/mux"
+	"log/slog"
+	"runtime/debug"
 	"time"
 
 	"net/http"
-
-	"github.com/sirupsen/logrus"
 )
 
 type PanicRecoveryMiddleware struct {
-	logger logrus.FieldLogger
+	logger *slog.Logger
 }
 
 type PanicRecoveryMiddlewareDependencies struct {
-	Logger logrus.FieldLogger
+	Logger *slog.Logger
 }
 
 func NewPanicRecoveryMiddleware(d PanicRecoveryMiddlewareDependencies) (*PanicRecoveryMiddleware, error) {
@@ -33,8 +34,9 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				stack := debug.Stack()
 				panicErr := errorspkg.NewErrPanicWrapper(err)
-				mw.logger.Error(panicErr)
+				mw.logger.Error("got panic", zeroslog.ErrorKey, panicErr, "stack", string(stack))
 				utils.WriteError(w, http.StatusInternalServerError, errorspkg.ErrInternalService)
 				return
 			}
@@ -44,10 +46,7 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 		route := mux.CurrentRoute(r)
 		path, _ := route.GetPathTemplate()
 
-		mw.logger.WithFields(logrus.Fields{
-			"path":   path,
-			"method": r.Method,
-		}).Info("HTTP request started")
+		mw.logger.Info("HTTP request started", "path", path, "method", r.Method)
 
 		srw := &statusCapturingResponseWriter{ResponseWriter: w}
 
@@ -57,20 +56,14 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 
 		statusCode := srw.Status()
 
-		entry := mw.logger.WithFields(logrus.Fields{
-			"path":     path,
-			"method":   r.Method,
-			"duration": duration,
-			"status":   statusCode,
-		})
 		switch statusCode {
 		case http.StatusBadRequest,
 			http.StatusNotFound,
 			http.StatusForbidden,
 			http.StatusInternalServerError:
-			entry.Error("HTTP request failed")
+			mw.logger.Error("HTTP request failed", "path", path, "method", r.Method, "duration", duration, "status", statusCode)
 		default:
-			entry.Info("HTTP request completed")
+			mw.logger.Info("HTTP request completed", "path", path, "method", r.Method, "duration", duration, "status", statusCode)
 		}
 	})
 }

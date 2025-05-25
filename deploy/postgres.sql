@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS guests (
     name text NOT NULL,
     email text NOT NULL,
     phone text,
+    tg_user_id   bigint,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 ------------------------------------------------------------
@@ -29,14 +30,6 @@ DO $$
     BEGIN
         CREATE TYPE reservation_status AS ENUM
             ('pending','confirmed','checked_in','checked_out','cancelled');
-    EXCEPTION
-        WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$
-    BEGIN
-        CREATE TYPE payment_status AS ENUM
-            ('pending','paid','failed','refunded');
     EXCEPTION
         WHEN duplicate_object THEN NULL;
 END $$;
@@ -59,16 +52,38 @@ CREATE TABLE IF NOT EXISTS reservations (
     )
 );
 ------------------------------------------------------------
--- Платежи
-CREATE TABLE IF NOT EXISTS payments (
-    uuid uuid PRIMARY KEY,
-    reservation_uuid uuid REFERENCES reservations ON DELETE CASCADE,
-    amount numeric(10,2) NOT NULL,
-    currency char(3) DEFAULT 'RUB',
-    method text,
-    status payment_status NOT NULL,
-    gateway_tx_id text, -- id в платёжном шлюзе
-    paid_at timestamptz
+-- Баня\чан
+CREATE TABLE IF NOT EXISTS bathhouses (
+    id SERIAL PRIMARY KEY,
+    house_id SMALLINT NOT NULL REFERENCES houses(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    price NUMERIC(10,2) NOT NULL,
+    description TEXT,
+    images TEXT[] NOT NULL DEFAULT '{}'::text[],
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (house_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS bathhouse_fill_options (
+    id SERIAL PRIMARY KEY,
+    bathhouse_id INT NOT NULL REFERENCES bathhouses(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    image TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price NUMERIC(10,2)
+);
+------------------------------------------------------------
+-- Брони бани\чана
+CREATE TABLE IF NOT EXISTS bathhouse_reservations (
+    id serial PRIMARY KEY,
+    reservation_uuid uuid NOT NULL REFERENCES reservations(uuid) ON DELETE CASCADE,
+    bathhouse_id int NOT NULL REFERENCES bathhouses(id) ON DELETE CASCADE,
+    date date NOT NULL,
+    time_from time NOT NULL,
+    time_to time NOT NULL,
+    fill_option_id int REFERENCES bathhouse_fill_options(id) ON DELETE SET NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT bathhouse_time_unique UNIQUE (bathhouse_id, date, time_from, time_to)
 );
 ------------------------------------------------------------
 -- Доп. услуги
@@ -106,10 +121,11 @@ CREATE TABLE IF NOT EXISTS blackouts (
 ------------------------------------------------------------
 -- Верификация пользователя
 CREATE TABLE IF NOT EXISTS verifications (
-    id           bigserial  PRIMARY KEY,
-    code         char(6)    NOT NULL UNIQUE,
+    uuid         uuid  PRIMARY KEY,
+    code         char(6)    NOT NULL,
     email        text       NOT NULL,
     phone        text       NOT NULL,
+    name         text       NOT NULL,
     tg_user_id   bigint,
     status       text       NOT NULL,
     created_at   timestamptz DEFAULT now(),
