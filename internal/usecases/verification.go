@@ -35,7 +35,7 @@ func NewVerification(d *VerificationDependencies) (*Verification, error) {
 	}, nil
 }
 
-func (s *Verification) Generate(ctx context.Context, email, phone string) (string, error) {
+func (s *Verification) Generate(ctx context.Context, email, phone, name string) (string, error) {
 	code := sixDigits()
 	exp := time.Now().Add(s.ttl)
 
@@ -43,6 +43,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone string) (strin
 		Code:      code,
 		Email:     email,
 		Phone:     phone,
+		Name:      name,
 		Status:    entities.VerifPending,
 		ExpiresAt: exp,
 	})

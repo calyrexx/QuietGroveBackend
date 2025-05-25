@@ -103,6 +103,7 @@ type (
 		Code       string
 		Email      string
 		Phone      string
+		Name       string
 		TgUserID   *int64
 		Status     VerificationStatus
 		CreatedAt  time.Time

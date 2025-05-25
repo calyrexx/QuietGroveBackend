@@ -6,7 +6,7 @@ import (
 )
 
 type IVerificationUseCase interface {
-	Generate(ctx context.Context, email, phone string) (string, error)
+	Generate(ctx context.Context, email, phone, name string) (string, error)
 }
 
 type VerificationDependencies struct {
@@ -27,6 +27,6 @@ func NewVerification(d *VerificationDependencies) (*Verification, error) {
 	}, nil
 }
 
-func (c *Verification) Generate(ctx context.Context, email, phone string) (string, error) {
-	return c.useCase.Generate(ctx, email, phone)
+func (c *Verification) Generate(ctx context.Context, email, phone, name string) (string, error) {
+	return c.useCase.Generate(ctx, email, phone, name)
 }

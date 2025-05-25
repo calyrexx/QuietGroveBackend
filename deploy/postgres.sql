@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS guests (
     name text NOT NULL,
     email text NOT NULL,
     phone text,
+    tg_user_id   bigint,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 ------------------------------------------------------------
@@ -86,10 +87,11 @@ CREATE TABLE IF NOT EXISTS blackouts (
 ------------------------------------------------------------
 -- Верификация пользователя
 CREATE TABLE IF NOT EXISTS verifications (
-    id           bigserial  PRIMARY KEY,
-    code         char(6)    NOT NULL UNIQUE,
+    uuid         uuid  PRIMARY KEY,
+    code         char(6)    NOT NULL,
     email        text       NOT NULL,
     phone        text       NOT NULL,
+    name         text       NOT NULL,
     tg_user_id   bigint,
     status       text       NOT NULL,
     created_at   timestamptz DEFAULT now(),

@@ -9,7 +9,7 @@ import (
 )
 
 type IVerificationController interface {
-	Generate(ctx context.Context, email, phone string) (string, error)
+	Generate(ctx context.Context, email, phone, name string) (string, error)
 }
 
 type VerificationDependencies struct {
@@ -47,7 +47,7 @@ func (h *Verification) VerifyIdentity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.controller.Generate(ctx, req.Email, req.Phone)
+	resp, err := h.controller.Generate(ctx, req.Email, req.Phone, req.Name)
 	if err != nil {
 		h.logger.Error(err.Error(), "method", "VerifyIdentity")
 		api.WriteError(w, http.StatusInternalServerError, err)
