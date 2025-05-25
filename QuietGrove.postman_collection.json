@@ -264,7 +264,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phone\": \"+79965667446\",\n    \"email\": \"xdxkxnjr@gmail.com\"\n}",
+							"raw": "{\n    \"phone\": \"+79965667446\",\n    \"email\": \"xdxkxnjr@gmail.com\",\n    \"name\": \"john doe\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
