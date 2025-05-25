@@ -52,12 +52,21 @@ type (
 		GuestsCount int
 		TotalPrice  int
 		Extras      []ReservationExtra
+		Bathhouse   []BathhouseMessage
 	}
 
 	ReservationExtra struct {
 		ExtraID  int
 		Quantity int
 		Amount   int
+	}
+
+	BathhouseMessage struct {
+		Name       string
+		Date       string
+		TimeFrom   string
+		TimeTo     string
+		FillOption *string
 	}
 
 	Extra struct {

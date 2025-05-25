@@ -153,6 +153,17 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 
 	go func(res entities.Reservation) {
 		house, _ := u.houseRepo.GetOne(context.Background(), res.HouseID)
+		bathhouseMsg := make([]entities.BathhouseMessage, 0, len(res.Bathhouse))
+		for _, reqBh := range req.Bathhouse {
+			bh, _ := u.bathhouseRepo.GetByID(context.Background(), reqBh.TypeID)
+			bathhouseMsg = append(bathhouseMsg, entities.BathhouseMessage{
+				Name:     bh.Name,
+				Date:     reqBh.Date,
+				TimeFrom: reqBh.TimeFrom,
+				TimeTo:   reqBh.TimeTo,
+				// TODO продумать как передавать наполнение чана
+			})
+		}
 
 		reservationMsg := entities.ReservationCreatedMessage{
 			House:       house.Name,
@@ -162,6 +173,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 			CheckOut:    res.CheckOut,
 			GuestsCount: res.GuestsCount,
 			TotalPrice:  res.TotalPrice,
+			Bathhouse:   bathhouseMsg,
 		}
 		if errSend := u.notifier.ReservationCreated(reservationMsg); errSend != nil {
 			u.logger.Error("telegram notify", zeroslog.ErrorKey, err)

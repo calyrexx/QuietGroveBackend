@@ -51,6 +51,19 @@ func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) err
 		msg.GuestsCount, msg.TotalPrice,
 	)
 
+	if len(msg.Bathhouse) > 0 {
+		text += "\n\n🔥 *Забронированы дополнительно:*"
+		for _, bath := range msg.Bathhouse {
+			text += fmt.Sprintf(
+				"\n- %s: %s с %s до %s",
+				bath.Name,
+				bath.Date, // TODO исправить на 02.01.2006
+				bath.TimeFrom,
+				bath.TimeTo,
+			)
+		}
+	}
+
 	for _, chatID := range a.adminChatIDs {
 		_, err := a.bot.SendMessage(ctx,
 			&bot.SendMessageParams{

@@ -25,7 +25,7 @@ type Postgres struct {
 
 type TelegramBot struct {
 	Token        string  `yaml:"Token"`
-	AdminChatIDs []int64 `yaml:"AdminChatID"`
+	AdminChatIDs []int64 `yaml:"AdminChatIDs"`
 }
 
 func NewCredentials() (*Credentials, error) {

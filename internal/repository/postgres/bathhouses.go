@@ -148,6 +148,69 @@ func (r *BathhousesRepo) GetByHouse(ctx context.Context, houseID int) ([]entitie
 	return result, nil
 }
 
+func (r *BathhousesRepo) GetByID(ctx context.Context, bathhouseID int) (*entities.Bathhouse, error) {
+	const method = "BathhousesRepo.GetByID"
+
+	rows, err := r.pool.Query(ctx, `
+		SELECT
+			b.id, b.house_id, b.name, b.price, b.description, b.images,
+			f.id, f.name, f.image, f.description, f.price
+		FROM bathhouses b
+		LEFT JOIN bathhouse_fill_options f ON f.bathhouse_id = b.id
+		WHERE b.id = $1
+		ORDER BY f.id
+	`, bathhouseID)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("pool.Query", method, err)
+	}
+	defer rows.Close()
+
+	var bathhouse *entities.Bathhouse
+
+	for rows.Next() {
+		var (
+			bID, houseID, fillID                           sql.NullInt64
+			name, description, fillName, fillImg, fillDesc sql.NullString
+			price, fillPrice                               sql.NullFloat64
+			images                                         []string
+		)
+		err = rows.Scan(&bID, &houseID, &name, &price, &description, &images,
+			&fillID, &fillName, &fillImg, &fillDesc, &fillPrice,
+		)
+		if err != nil {
+			return nil, errorspkg.NewErrRepoFailed("rows.Scan", method, err)
+		}
+
+		if bathhouse == nil {
+			bathhouse = &entities.Bathhouse{
+				ID:          int(bID.Int64),
+				HouseID:     int(houseID.Int64),
+				Name:        name.String,
+				Price:       int(price.Float64),
+				Description: description.String,
+				Images:      images,
+				FillOptions: []entities.BathhouseFillOption{},
+			}
+		}
+
+		if fillID.Valid {
+			bathhouse.FillOptions = append(bathhouse.FillOptions, entities.BathhouseFillOption{
+				ID:          int(fillID.Int64),
+				BathhouseID: int(bID.Int64),
+				Name:        fillName.String,
+				Image:       fillImg.String,
+				Description: fillDesc.String,
+				Price:       int(fillPrice.Float64),
+			})
+		}
+	}
+
+	if bathhouse == nil {
+		return nil, sql.ErrNoRows
+	}
+	return bathhouse, nil
+}
+
 func (r *BathhousesRepo) Add(ctx context.Context, bathhouses []entities.Bathhouse) error {
 	const method = "BathhousesRepo.Add"
 
