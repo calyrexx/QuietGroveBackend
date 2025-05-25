@@ -62,4 +62,29 @@ type (
 		Phone string `json:"phone"`
 		Name  string `json:"name"`
 	}
+
+	Bathhouse struct {
+		ID           int              `json:"id"`
+		Name         string           `json:"name"`
+		DefaultPrice float64          `json:"defaultPrice"`
+		CreatedAt    string           `json:"createdAt"`
+		Houses       []HouseBathhouse `json:"houses"`
+		FillOptions  []BathhouseFill  `json:"fillOptions"`
+	}
+
+	HouseBathhouse struct {
+		ID          int      `json:"id"`
+		HouseID     int      `json:"houseId"`
+		Price       float64  `json:"price"`
+		Description string   `json:"description"`
+		Images      []string `json:"images"`
+	}
+
+	BathhouseFill struct {
+		ID          int     `json:"id"`
+		Name        string  `json:"name"`
+		Image       string  `json:"image"`
+		Description string  `json:"description"`
+		Price       float64 `json:"price"`
+	}
 )

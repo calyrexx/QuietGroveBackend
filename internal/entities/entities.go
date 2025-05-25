@@ -120,4 +120,28 @@ type (
 		TimeTo       string
 		FillOptionID int
 	}
+
+	Bathhouse struct {
+		ID           int
+		Name         string
+		DefaultPrice int
+		Houses       []HouseBathhouse
+		FillOptions  []BathhouseFill
+	}
+
+	HouseBathhouse struct {
+		ID          int
+		HouseID     int
+		Price       int
+		Description string
+		Images      []string
+	}
+
+	BathhouseFill struct {
+		ID          int
+		Name        string
+		Image       string
+		Description string
+		Price       int
+	}
 )

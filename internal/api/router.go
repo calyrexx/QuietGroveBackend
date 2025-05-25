@@ -14,6 +14,7 @@ const (
 	extrasPath       = "/extras"
 	reservationPath  = "/reservation"
 	verificationPath = "/verification"
+	bathhousesPath   = "/bathhouses"
 	idPath           = "/{id}"
 	emptyPath        = ""
 )
@@ -28,6 +29,13 @@ type IReservations interface {
 }
 
 type IHouses interface {
+	GetAll(w http.ResponseWriter, r *http.Request)
+	Add(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+}
+
+type IBathhouses interface {
 	GetAll(w http.ResponseWriter, r *http.Request)
 	Add(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
@@ -53,6 +61,7 @@ type IGeneral interface {
 type Handlers struct {
 	Reservations IReservations
 	Houses       IHouses
+	Bathhouses   IBathhouses
 	Extras       IExtras
 	Verification IVerification
 	General      IGeneral
@@ -87,6 +96,12 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	houses.HandleFunc(idPath, dep.Handlers.Houses.Update).Methods(http.MethodPut)
 	houses.HandleFunc(idPath, dep.Handlers.Houses.Delete).Methods(http.MethodDelete)
 	houses.HandleFunc(emptyPath, dep.Handlers.Houses.GetAll).Methods(http.MethodGet)
+
+	bathhouses := r.PathPrefix(bathhousesPath).Subrouter()
+	bathhouses.HandleFunc(emptyPath, dep.Handlers.Bathhouses.Add).Methods(http.MethodPost)
+	bathhouses.HandleFunc(idPath, dep.Handlers.Bathhouses.Update).Methods(http.MethodPut)
+	bathhouses.HandleFunc(idPath, dep.Handlers.Bathhouses.Delete).Methods(http.MethodDelete)
+	bathhouses.HandleFunc(emptyPath, dep.Handlers.Bathhouses.GetAll).Methods(http.MethodGet)
 
 	extras := r.PathPrefix(extrasPath).Subrouter()
 	extras.HandleFunc(emptyPath, dep.Handlers.Extras.Add).Methods(http.MethodPost)

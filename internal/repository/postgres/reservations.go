@@ -145,7 +145,7 @@ func (r *ReservationsRepo) GetPrice(ctx context.Context, houseID int, extras []e
 		}
 
 		bathhousesPriceQuery := `
-			SELECT default_price FROM sauna_types 
+			SELECT default_price FROM bathhouses_types 
 				WHERE id = ANY($1)
 		`
 		rows, extErr := r.pool.Query(ctx, bathhousesPriceQuery, bathhouseIds)

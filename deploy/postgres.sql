@@ -53,32 +53,30 @@ CREATE TABLE IF NOT EXISTS reservations (
 );
 ------------------------------------------------------------
 -- Баня\чан
-CREATE TABLE IF NOT EXISTS sauna_types (
+CREATE TABLE IF NOT EXISTS bathhouses_types (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     default_price NUMERIC(10,2) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS house_saunas (
+CREATE TABLE IF NOT EXISTS house_bathhouses (
     id SERIAL PRIMARY KEY,
     house_id SMALLINT NOT NULL REFERENCES houses(id) ON DELETE CASCADE,
-    sauna_type_id INT NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE,
+    bathhouse_type_id INT NOT NULL REFERENCES bathhouses_types(id) ON DELETE CASCADE,
     price NUMERIC(10,2) NOT NULL,
     description TEXT,
-    images TEXT[] NOT NULL DEFAULT '{}',
-    is_active BOOL NOT NULL DEFAULT TRUE,
-    UNIQUE (house_id, sauna_type_id)
+    images TEXT[] NOT NULL DEFAULT '{}'::text[],
+    UNIQUE (house_id, bathhouse_type_id)
 );
 
-CREATE TABLE IF NOT EXISTS sauna_fill_options (
+CREATE TABLE IF NOT EXISTS bathhouse_fill_options (
     id SERIAL PRIMARY KEY,
-    sauna_type_id INT NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE,
-    label TEXT NOT NULL,
+    bathhouse_type_id INT NOT NULL REFERENCES bathhouses_types(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
     image TEXT NOT NULL,
     description TEXT NOT NULL,
-    price NUMERIC(10,2),
-    is_active BOOL NOT NULL DEFAULT TRUE
+    price NUMERIC(10,2)
 );
 ------------------------------------------------------------
 -- Брони бани\чана
