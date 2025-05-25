@@ -52,6 +52,48 @@ CREATE TABLE IF NOT EXISTS reservations (
     )
 );
 ------------------------------------------------------------
+-- Баня\чан
+CREATE TABLE IF NOT EXISTS sauna_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    default_price NUMERIC(10,2) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS house_saunas (
+    id SERIAL PRIMARY KEY,
+    house_id SMALLINT NOT NULL REFERENCES houses(id) ON DELETE CASCADE,
+    sauna_type_id INT NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE,
+    price NUMERIC(10,2) NOT NULL,
+    description TEXT,
+    images TEXT[] NOT NULL DEFAULT '{}',
+    is_active BOOL NOT NULL DEFAULT TRUE,
+    UNIQUE (house_id, sauna_type_id)
+);
+
+CREATE TABLE IF NOT EXISTS sauna_fill_options (
+    id SERIAL PRIMARY KEY,
+    sauna_type_id INT NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE,
+    label TEXT NOT NULL,
+    image TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price NUMERIC(10,2),
+    is_active BOOL NOT NULL DEFAULT TRUE
+);
+------------------------------------------------------------
+-- Брони бани\чана
+CREATE TABLE IF NOT EXISTS bathhouse_reservations (
+    id serial PRIMARY KEY,
+    reservation_uuid uuid NOT NULL REFERENCES reservations(uuid) ON DELETE CASCADE,
+    type_id int NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE, -- Баня или чан
+    date date NOT NULL,
+    time_from time NOT NULL,
+    time_to time NOT NULL,
+    fill_option_id int REFERENCES sauna_fill_options(id) ON DELETE SET NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT bathhouse_time_unique UNIQUE (type_id, date, time_from, time_to)
+);
+------------------------------------------------------------
 -- Доп. услуги
 CREATE TABLE IF NOT EXISTS extras (
     id smallint PRIMARY KEY,

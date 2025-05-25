@@ -12,6 +12,7 @@ type CreateReservationRequest struct {
 	CheckOut    time.Time
 	GuestsCount int
 	Extras      []entities.ReservationExtra
+	Bathhouse   []entities.BathhouseReservation
 }
 
 type GetAvailableHousesResponse struct {

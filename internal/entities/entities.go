@@ -40,6 +40,7 @@ type (
 		CreatedAt   time.Time
 		UpdatedAt   time.Time
 		Extras      []ReservationExtra
+		Bathhouse   []BathhouseReservation
 	}
 
 	ReservationCreatedMessage struct {
@@ -80,8 +81,9 @@ type (
 	}
 
 	GetPrice struct {
-		House  int
-		Extras int
+		House     int
+		Extras    int
+		Bathhouse int
 	}
 
 	GetAvailableHouses struct {
@@ -109,5 +111,13 @@ type (
 		CreatedAt  time.Time
 		VerifiedAt *time.Time
 		ExpiresAt  time.Time
+	}
+
+	BathhouseReservation struct {
+		TypeID       int
+		Date         string
+		TimeFrom     string
+		TimeTo       string
+		FillOptionID int
 	}
 )

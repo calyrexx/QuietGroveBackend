@@ -120,7 +120,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		return response, err
 	}
 
-	basePrice, err := u.reservationRepo.GetPrice(ctx, req.HouseID, req.Extras)
+	basePrice, err := u.reservationRepo.GetPrice(ctx, req.HouseID, req.Extras, req.Bathhouse)
 	if err != nil {
 		return response, err
 	}
@@ -135,6 +135,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		GuestsCount: req.GuestsCount,
 		Status:      reservationStub,
 		TotalPrice:  totalPrice,
+		Bathhouse:   req.Bathhouse,
 	}
 
 	if err = u.reservationRepo.Create(ctx, reservation); err != nil {

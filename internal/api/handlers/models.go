@@ -28,12 +28,21 @@ type (
 	}
 
 	CreateReservation struct {
-		HouseID     int                `json:"houseId"`
-		Guest       Guest              `json:"guest"`
-		CheckIn     string             `json:"checkIn"`
-		CheckOut    string             `json:"checkOut"`
-		GuestsCount int                `json:"guestsCount"`
-		Extras      []ExtraReservation `json:"extras,omitempty"`
+		HouseID     int                    `json:"houseId"`
+		Guest       Guest                  `json:"guest"`
+		CheckIn     string                 `json:"checkIn"`
+		CheckOut    string                 `json:"checkOut"`
+		GuestsCount int                    `json:"guestsCount"`
+		Extras      []ExtraReservation     `json:"extras,omitempty"`
+		Bathhouse   []BathhouseReservation `json:"bathhouses,omitempty"`
+	}
+
+	BathhouseReservation struct {
+		TypeID       int    `json:"id"`
+		Date         string `json:"date"`
+		TimeFrom     string `json:"timeFrom"`
+		TimeTo       string `json:"timeTo"`
+		FillOptionID int    `json:"fillId,omitempty"`
 	}
 
 	Guest struct {
