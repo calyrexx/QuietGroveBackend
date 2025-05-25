@@ -8,6 +8,7 @@ import (
 type Controllers struct {
 	Reservations *controllers.Reservations
 	Houses       *controllers.Houses
+	Bathhouses   *controllers.Bathhouses
 	Extras       *controllers.Extras
 	Verification *controllers.Verification
 }
@@ -31,6 +32,13 @@ func NewControllers(
 		return nil, err
 	}
 
+	bathhousesController, err := controllers.NewBathhouses(&controllers.BathhousesDependencies{
+		UseCase: usecases.bathhouses,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	extrasController, err := controllers.NewExtras(&controllers.ExtrasDependencies{
 		UseCase: usecases.extras,
 	})
@@ -48,6 +56,7 @@ func NewControllers(
 	return &Controllers{
 		Reservations: reservationsController,
 		Houses:       housesController,
+		Bathhouses:   bathhousesController,
 		Extras:       extrasController,
 		Verification: verificationController,
 	}, nil

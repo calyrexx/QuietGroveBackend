@@ -37,6 +37,7 @@ type IHouses interface {
 
 type IBathhouses interface {
 	GetAll(w http.ResponseWriter, r *http.Request)
+	GetByHouse(w http.ResponseWriter, r *http.Request)
 	Add(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
@@ -102,6 +103,7 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	bathhouses.HandleFunc(idPath, dep.Handlers.Bathhouses.Update).Methods(http.MethodPut)
 	bathhouses.HandleFunc(idPath, dep.Handlers.Bathhouses.Delete).Methods(http.MethodDelete)
 	bathhouses.HandleFunc(emptyPath, dep.Handlers.Bathhouses.GetAll).Methods(http.MethodGet)
+	bathhouses.HandleFunc(idPath, dep.Handlers.Bathhouses.GetByHouse).Methods(http.MethodGet)
 
 	extras := r.PathPrefix(extrasPath).Subrouter()
 	extras.HandleFunc(emptyPath, dep.Handlers.Extras.Add).Methods(http.MethodPost)

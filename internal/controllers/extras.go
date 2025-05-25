@@ -24,7 +24,7 @@ type Extras struct {
 
 func NewExtras(d *ExtrasDependencies) (*Extras, error) {
 	if d.UseCase == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Extras UseCase", "whole", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies("Extras Controller", "whole", "nil")
 	}
 	return &Extras{
 		useCase: d.UseCase,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/jackc/pgx/v5"
+	"strconv"
 
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
@@ -58,7 +59,7 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 			btID, hbID, houseID, bfoID       sql.NullInt64
 			btName, hbDesc, bfoName, bfoDesc sql.NullString
 			btCreated, bfoImg                sql.NullString
-			btDefPrice, hbPrice, bfoPrice    sql.NullInt32
+			btDefPrice, hbPrice, bfoPrice    sql.NullString
 			hbImgs                           []string
 		)
 		err = rows.Scan(&btID, &btName, &btDefPrice, &btCreated,
@@ -69,16 +70,33 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 			return nil, errorspkg.NewErrRepoFailed("rows.Scan", method, err)
 		}
 		typeID := int(btID.Int64)
+
+		defPrice := 0
+		if btDefPrice.Valid && btDefPrice.String != "" {
+			p, err := strconv.ParseFloat(btDefPrice.String, 64)
+			if err == nil {
+				defPrice = int(p)
+			}
+		}
+
 		bh, ok := bathhouseMap[typeID]
 		if !ok {
 			bh = &entities.Bathhouse{
 				ID:           typeID,
 				Name:         btName.String,
-				DefaultPrice: int(btDefPrice.Int32),
+				DefaultPrice: defPrice,
 				Houses:       []entities.HouseBathhouse{},
 				FillOptions:  []entities.BathhouseFill{},
 			}
 			bathhouseMap[typeID] = bh
+		}
+
+		housePrice := 0
+		if hbPrice.Valid && hbPrice.String != "" {
+			p, err := strconv.ParseFloat(hbPrice.String, 64)
+			if err == nil {
+				housePrice = int(p)
+			}
 		}
 		if hbID.Valid {
 			houseKey := [2]int{typeID, int(hbID.Int64)}
@@ -86,14 +104,21 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 				bh.Houses = append(bh.Houses, entities.HouseBathhouse{
 					ID:          int(hbID.Int64),
 					HouseID:     int(houseID.Int64),
-					Price:       int(hbPrice.Int32),
+					Price:       housePrice,
 					Description: hbDesc.String,
 					Images:      hbImgs,
 				})
 				houseSet[houseKey] = struct{}{}
 			}
 		}
-		// Add FillOption
+
+		fillPrice := 0
+		if bfoPrice.Valid && bfoPrice.String != "" {
+			p, err := strconv.ParseFloat(bfoPrice.String, 64)
+			if err == nil {
+				fillPrice = int(p)
+			}
+		}
 		if bfoID.Valid {
 			fillKey := [2]int{typeID, int(bfoID.Int64)}
 			if _, exists := fillSet[fillKey]; !exists {
@@ -102,12 +127,134 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 					Name:        bfoName.String,
 					Image:       bfoImg.String,
 					Description: bfoDesc.String,
-					Price:       int(bfoPrice.Int32),
+					Price:       fillPrice,
 				})
 				fillSet[fillKey] = struct{}{}
 			}
 		}
 	}
+	res := make([]entities.Bathhouse, 0, len(bathhouseMap))
+	for _, bh := range bathhouseMap {
+		res = append(res, *bh)
+	}
+	return res, nil
+}
+
+func (r *BathhousesRepo) GetByHouse(ctx context.Context, houseID int) ([]entities.Bathhouse, error) {
+	const method = "BathhousesRepo.GetByHouse"
+
+	rows, err := r.pool.Query(ctx, `
+		SELECT
+			bt.id,
+			bt.name,
+			bt.default_price,
+			bt.created_at,
+
+			hb.id,
+			hb.house_id,
+			hb.price,
+			hb.description,
+			hb.images,
+
+			bfo.id,
+			bfo.name,
+			bfo.image,
+			bfo.description,
+			bfo.price
+		FROM bathhouses_types bt
+		INNER JOIN house_bathhouses hb ON hb.bathhouse_type_id = bt.id AND hb.house_id = $1
+		LEFT JOIN bathhouse_fill_options bfo ON bfo.bathhouse_type_id = bt.id
+		ORDER BY bt.id, hb.id, bfo.id
+	`, houseID)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("pool.Query", method, err)
+	}
+	defer rows.Close()
+
+	bathhouseMap := make(map[int]*entities.Bathhouse)
+	houseSet := make(map[[2]int]struct{})
+	fillSet := make(map[[2]int]struct{})
+
+	for rows.Next() {
+		var (
+			btID, hbID, houseIdDB, bfoID     sql.NullInt64
+			btName, hbDesc, bfoName, bfoDesc sql.NullString
+			btCreated, bfoImg                sql.NullString
+			btDefPrice, hbPrice, bfoPrice    sql.NullString
+			hbImgs                           []string
+		)
+		err = rows.Scan(&btID, &btName, &btDefPrice, &btCreated,
+			&hbID, &houseIdDB, &hbPrice, &hbDesc, &hbImgs,
+			&bfoID, &bfoName, &bfoImg, &bfoDesc, &bfoPrice,
+		)
+		if err != nil {
+			return nil, errorspkg.NewErrRepoFailed("rows.Scan", method, err)
+		}
+		typeID := int(btID.Int64)
+
+		defPrice := 0
+		if btDefPrice.Valid && btDefPrice.String != "" {
+			p, err := strconv.ParseFloat(btDefPrice.String, 64)
+			if err == nil {
+				defPrice = int(p)
+			}
+		}
+
+		bh, ok := bathhouseMap[typeID]
+		if !ok {
+			bh = &entities.Bathhouse{
+				ID:           typeID,
+				Name:         btName.String,
+				DefaultPrice: defPrice,
+				Houses:       []entities.HouseBathhouse{},
+				FillOptions:  []entities.BathhouseFill{},
+			}
+			bathhouseMap[typeID] = bh
+		}
+
+		housePrice := 0
+		if hbPrice.Valid && hbPrice.String != "" {
+			p, err := strconv.ParseFloat(hbPrice.String, 64)
+			if err == nil {
+				housePrice = int(p)
+			}
+		}
+		if hbID.Valid && houseIdDB.Valid {
+			houseKey := [2]int{typeID, int(hbID.Int64)}
+			if _, exists := houseSet[houseKey]; !exists {
+				bh.Houses = append(bh.Houses, entities.HouseBathhouse{
+					ID:          int(hbID.Int64),
+					HouseID:     int(houseIdDB.Int64),
+					Price:       housePrice,
+					Description: hbDesc.String,
+					Images:      hbImgs,
+				})
+				houseSet[houseKey] = struct{}{}
+			}
+		}
+
+		fillPrice := 0
+		if bfoPrice.Valid && bfoPrice.String != "" {
+			p, err := strconv.ParseFloat(bfoPrice.String, 64)
+			if err == nil {
+				fillPrice = int(p)
+			}
+		}
+		if bfoID.Valid {
+			fillKey := [2]int{typeID, int(bfoID.Int64)}
+			if _, exists := fillSet[fillKey]; !exists {
+				bh.FillOptions = append(bh.FillOptions, entities.BathhouseFill{
+					ID:          int(bfoID.Int64),
+					Name:        bfoName.String,
+					Image:       bfoImg.String,
+					Description: bfoDesc.String,
+					Price:       fillPrice,
+				})
+				fillSet[fillKey] = struct{}{}
+			}
+		}
+	}
+
 	res := make([]entities.Bathhouse, 0, len(bathhouseMap))
 	for _, bh := range bathhouseMap {
 		res = append(res, *bh)

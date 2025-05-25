@@ -29,6 +29,10 @@ func (u *Bathhouses) GetAll(ctx context.Context) ([]entities.Bathhouse, error) {
 	return u.repo.GetAll(ctx)
 }
 
+func (u *Bathhouses) GetByHouse(ctx context.Context, houseID int) ([]entities.Bathhouse, error) {
+	return u.repo.GetByHouse(ctx, houseID)
+}
+
 func (u *Bathhouses) Add(ctx context.Context, bhs []entities.Bathhouse) error {
 	return u.repo.Add(ctx, bhs)
 }

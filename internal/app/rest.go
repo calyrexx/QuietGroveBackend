@@ -48,6 +48,14 @@ func NewRest(
 		return nil, err
 	}
 
+	bathhousesHandler, err := handlers.NewBathhouses(handlers.BathhousesDependencies{
+		Controller: controllers.Bathhouses,
+		Logger:     logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	extrasHandler, err := handlers.NewExtras(handlers.ExtrasDependencies{
 		Controller: controllers.Extras,
 		Logger:     logger,
@@ -68,6 +76,7 @@ func NewRest(
 		Handlers: api.Handlers{
 			Reservations: reservationsHandler,
 			Houses:       housesHandler,
+			Bathhouses:   bathhousesHandler,
 			Extras:       extrasHandler,
 			General:      general,
 			Verification: verificationHandler,

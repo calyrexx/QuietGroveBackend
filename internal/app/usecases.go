@@ -11,6 +11,7 @@ import (
 type Usecases struct {
 	reservations *usecases.Reservation
 	houses       *usecases.Houses
+	bathhouses   *usecases.Bathhouses
 	extras       *usecases.Extras
 	verification *usecases.Verification
 }
@@ -42,6 +43,14 @@ func NewUsecases(
 		return nil, err
 	}
 
+	bathhousesUsecase, err := usecases.NewBathhouses(&usecases.BathhousesDependencies{
+		Repo:   repo.Bathhouses,
+		Logger: logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	extrasUsecase, err := usecases.NewExtras(&usecases.ExtrasDependencies{
 		Repo:   repo.Extras,
 		Logger: logger,
@@ -61,6 +70,7 @@ func NewUsecases(
 	return &Usecases{
 		reservations: reservationsUsecase,
 		houses:       housesUsecase,
+		bathhouses:   bathhousesUsecase,
 		extras:       extrasUsecase,
 		verification: verificationUsecase,
 	}, nil
