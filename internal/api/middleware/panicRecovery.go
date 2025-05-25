@@ -6,6 +6,7 @@ import (
 	"github.com/calyrexx/zeroslog"
 	"github.com/gorilla/mux"
 	"log/slog"
+	"runtime/debug"
 	"time"
 
 	"net/http"
@@ -33,8 +34,9 @@ func (mw *PanicRecoveryMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				stack := debug.Stack()
 				panicErr := errorspkg.NewErrPanicWrapper(err)
-				mw.logger.Error("got panic", zeroslog.ErrorKey, panicErr)
+				mw.logger.Error("got panic", zeroslog.ErrorKey, panicErr, "stack", string(stack))
 				utils.WriteError(w, http.StatusInternalServerError, errorspkg.ErrInternalService)
 				return
 			}

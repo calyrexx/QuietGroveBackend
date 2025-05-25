@@ -53,26 +53,20 @@ CREATE TABLE IF NOT EXISTS reservations (
 );
 ------------------------------------------------------------
 -- Баня\чан
-CREATE TABLE IF NOT EXISTS bathhouses_types (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    default_price NUMERIC(10,2) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS house_bathhouses (
+CREATE TABLE IF NOT EXISTS bathhouses (
     id SERIAL PRIMARY KEY,
     house_id SMALLINT NOT NULL REFERENCES houses(id) ON DELETE CASCADE,
-    bathhouse_type_id INT NOT NULL REFERENCES bathhouses_types(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
     price NUMERIC(10,2) NOT NULL,
     description TEXT,
     images TEXT[] NOT NULL DEFAULT '{}'::text[],
-    UNIQUE (house_id, bathhouse_type_id)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (house_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS bathhouse_fill_options (
     id SERIAL PRIMARY KEY,
-    bathhouse_type_id INT NOT NULL REFERENCES bathhouses_types(id) ON DELETE CASCADE,
+    bathhouse_id INT NOT NULL REFERENCES bathhouses(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     image TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -83,13 +77,13 @@ CREATE TABLE IF NOT EXISTS bathhouse_fill_options (
 CREATE TABLE IF NOT EXISTS bathhouse_reservations (
     id serial PRIMARY KEY,
     reservation_uuid uuid NOT NULL REFERENCES reservations(uuid) ON DELETE CASCADE,
-    type_id int NOT NULL REFERENCES sauna_types(id) ON DELETE CASCADE, -- Баня или чан
+    bathhouse_id int NOT NULL REFERENCES bathhouses(id) ON DELETE CASCADE,
     date date NOT NULL,
     time_from time NOT NULL,
     time_to time NOT NULL,
-    fill_option_id int REFERENCES sauna_fill_options(id) ON DELETE SET NULL,
+    fill_option_id int REFERENCES bathhouse_fill_options(id) ON DELETE SET NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT bathhouse_time_unique UNIQUE (type_id, date, time_from, time_to)
+    CONSTRAINT bathhouse_time_unique UNIQUE (bathhouse_id, date, time_from, time_to)
 );
 ------------------------------------------------------------
 -- Доп. услуги

@@ -122,23 +122,18 @@ type (
 	}
 
 	Bathhouse struct {
-		ID           int
-		Name         string
-		DefaultPrice int
-		Houses       []HouseBathhouse
-		FillOptions  []BathhouseFill
-	}
-
-	HouseBathhouse struct {
 		ID          int
 		HouseID     int
+		Name        string
 		Price       int
 		Description string
 		Images      []string
+		FillOptions []BathhouseFillOption
 	}
 
-	BathhouseFill struct {
+	BathhouseFillOption struct {
 		ID          int
+		BathhouseID int
 		Name        string
 		Image       string
 		Description string

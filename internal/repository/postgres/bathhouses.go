@@ -3,8 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"github.com/jackc/pgx/v5"
-	"strconv"
 
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
@@ -24,26 +22,11 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 
 	rows, err := r.pool.Query(ctx, `
 		SELECT
-			bt.id,
-			bt.name,
-			bt.default_price,
-			bt.created_at,
-			
-			hb.id,
-			hb.house_id,
-			hb.price,
-			hb.description,
-			hb.images,
-			
-			bfo.id,
-			bfo.name,
-			bfo.image,
-			bfo.description,
-			bfo.price
-		FROM bathhouses_types bt
-		LEFT JOIN house_bathhouses hb ON hb.bathhouse_type_id = bt.id
-		LEFT JOIN bathhouse_fill_options bfo ON bfo.bathhouse_type_id = bt.id
-		ORDER BY bt.id, hb.id, bfo.id
+			b.id, b.house_id, b.name, b.price, b.description, b.images,
+			f.id, f.name, f.image, f.description, f.price
+		FROM bathhouses b
+		LEFT JOIN bathhouse_fill_options f ON f.bathhouse_id = b.id
+		ORDER BY b.id, f.id
 	`)
 	if err != nil {
 		return nil, errorspkg.NewErrRepoFailed("pool.Query", method, err)
@@ -51,93 +34,52 @@ func (r *BathhousesRepo) GetAll(ctx context.Context) ([]entities.Bathhouse, erro
 	defer rows.Close()
 
 	bathhouseMap := make(map[int]*entities.Bathhouse)
-	houseSet := make(map[[2]int]struct{}) // [TypeID, HouseBathhouseID]
-	fillSet := make(map[[2]int]struct{})  // [TypeID, FillOptionID]
 
 	for rows.Next() {
 		var (
-			btID, hbID, houseID, bfoID       sql.NullInt64
-			btName, hbDesc, bfoName, bfoDesc sql.NullString
-			btCreated, bfoImg                sql.NullString
-			btDefPrice, hbPrice, bfoPrice    sql.NullString
-			hbImgs                           []string
+			bathhouseID, houseID, fillID                   sql.NullInt64
+			name, description, fillName, fillImg, fillDesc sql.NullString
+			price, fillPrice                               sql.NullFloat64
+			images                                         []string
 		)
-		err = rows.Scan(&btID, &btName, &btDefPrice, &btCreated,
-			&hbID, &houseID, &hbPrice, &hbDesc, &hbImgs,
-			&bfoID, &bfoName, &bfoImg, &bfoDesc, &bfoPrice,
+		err = rows.Scan(&bathhouseID, &houseID, &name, &price, &description, &images,
+			&fillID, &fillName, &fillImg, &fillDesc, &fillPrice,
 		)
 		if err != nil {
 			return nil, errorspkg.NewErrRepoFailed("rows.Scan", method, err)
 		}
-		typeID := int(btID.Int64)
 
-		defPrice := 0
-		if btDefPrice.Valid && btDefPrice.String != "" {
-			p, err := strconv.ParseFloat(btDefPrice.String, 64)
-			if err == nil {
-				defPrice = int(p)
-			}
-		}
-
-		bh, ok := bathhouseMap[typeID]
-		if !ok {
+		bh, exists := bathhouseMap[int(bathhouseID.Int64)]
+		if !exists {
 			bh = &entities.Bathhouse{
-				ID:           typeID,
-				Name:         btName.String,
-				DefaultPrice: defPrice,
-				Houses:       []entities.HouseBathhouse{},
-				FillOptions:  []entities.BathhouseFill{},
+				ID:          int(bathhouseID.Int64),
+				HouseID:     int(houseID.Int64),
+				Name:        name.String,
+				Price:       int(price.Float64),
+				Description: description.String,
+				Images:      images,
+				FillOptions: []entities.BathhouseFillOption{},
 			}
-			bathhouseMap[typeID] = bh
+			bathhouseMap[bh.ID] = bh
 		}
 
-		housePrice := 0
-		if hbPrice.Valid && hbPrice.String != "" {
-			p, err := strconv.ParseFloat(hbPrice.String, 64)
-			if err == nil {
-				housePrice = int(p)
-			}
-		}
-		if hbID.Valid {
-			houseKey := [2]int{typeID, int(hbID.Int64)}
-			if _, exists := houseSet[houseKey]; !exists {
-				bh.Houses = append(bh.Houses, entities.HouseBathhouse{
-					ID:          int(hbID.Int64),
-					HouseID:     int(houseID.Int64),
-					Price:       housePrice,
-					Description: hbDesc.String,
-					Images:      hbImgs,
-				})
-				houseSet[houseKey] = struct{}{}
-			}
-		}
-
-		fillPrice := 0
-		if bfoPrice.Valid && bfoPrice.String != "" {
-			p, err := strconv.ParseFloat(bfoPrice.String, 64)
-			if err == nil {
-				fillPrice = int(p)
-			}
-		}
-		if bfoID.Valid {
-			fillKey := [2]int{typeID, int(bfoID.Int64)}
-			if _, exists := fillSet[fillKey]; !exists {
-				bh.FillOptions = append(bh.FillOptions, entities.BathhouseFill{
-					ID:          int(bfoID.Int64),
-					Name:        bfoName.String,
-					Image:       bfoImg.String,
-					Description: bfoDesc.String,
-					Price:       fillPrice,
-				})
-				fillSet[fillKey] = struct{}{}
-			}
+		if fillID.Valid {
+			bh.FillOptions = append(bh.FillOptions, entities.BathhouseFillOption{
+				ID:          int(fillID.Int64),
+				BathhouseID: int(bathhouseID.Int64),
+				Name:        fillName.String,
+				Image:       fillImg.String,
+				Description: fillDesc.String,
+				Price:       int(fillPrice.Float64),
+			})
 		}
 	}
-	res := make([]entities.Bathhouse, 0, len(bathhouseMap))
+
+	result := make([]entities.Bathhouse, 0, len(bathhouseMap))
 	for _, bh := range bathhouseMap {
-		res = append(res, *bh)
+		result = append(result, *bh)
 	}
-	return res, nil
+	return result, nil
 }
 
 func (r *BathhousesRepo) GetByHouse(ctx context.Context, houseID int) ([]entities.Bathhouse, error) {
@@ -145,26 +87,12 @@ func (r *BathhousesRepo) GetByHouse(ctx context.Context, houseID int) ([]entitie
 
 	rows, err := r.pool.Query(ctx, `
 		SELECT
-			bt.id,
-			bt.name,
-			bt.default_price,
-			bt.created_at,
-
-			hb.id,
-			hb.house_id,
-			hb.price,
-			hb.description,
-			hb.images,
-
-			bfo.id,
-			bfo.name,
-			bfo.image,
-			bfo.description,
-			bfo.price
-		FROM bathhouses_types bt
-		INNER JOIN house_bathhouses hb ON hb.bathhouse_type_id = bt.id AND hb.house_id = $1
-		LEFT JOIN bathhouse_fill_options bfo ON bfo.bathhouse_type_id = bt.id
-		ORDER BY bt.id, hb.id, bfo.id
+			b.id, b.house_id, b.name, b.price, b.description, b.images,
+			f.id, f.name, f.image, f.description, f.price
+		FROM bathhouses b
+		LEFT JOIN bathhouse_fill_options f ON f.bathhouse_id = b.id
+		WHERE b.house_id = $1
+		ORDER BY b.id, f.id
 	`, houseID)
 	if err != nil {
 		return nil, errorspkg.NewErrRepoFailed("pool.Query", method, err)
@@ -172,165 +100,78 @@ func (r *BathhousesRepo) GetByHouse(ctx context.Context, houseID int) ([]entitie
 	defer rows.Close()
 
 	bathhouseMap := make(map[int]*entities.Bathhouse)
-	houseSet := make(map[[2]int]struct{})
-	fillSet := make(map[[2]int]struct{})
 
 	for rows.Next() {
 		var (
-			btID, hbID, houseIdDB, bfoID     sql.NullInt64
-			btName, hbDesc, bfoName, bfoDesc sql.NullString
-			btCreated, bfoImg                sql.NullString
-			btDefPrice, hbPrice, bfoPrice    sql.NullString
-			hbImgs                           []string
+			bathhouseID, houseIDDb, fillID                 sql.NullInt64
+			name, description, fillName, fillImg, fillDesc sql.NullString
+			price, fillPrice                               sql.NullFloat64
+			images                                         []string
 		)
-		err = rows.Scan(&btID, &btName, &btDefPrice, &btCreated,
-			&hbID, &houseIdDB, &hbPrice, &hbDesc, &hbImgs,
-			&bfoID, &bfoName, &bfoImg, &bfoDesc, &bfoPrice,
+		err = rows.Scan(&bathhouseID, &houseIDDb, &name, &price, &description, &images,
+			&fillID, &fillName, &fillImg, &fillDesc, &fillPrice,
 		)
 		if err != nil {
 			return nil, errorspkg.NewErrRepoFailed("rows.Scan", method, err)
 		}
-		typeID := int(btID.Int64)
 
-		defPrice := 0
-		if btDefPrice.Valid && btDefPrice.String != "" {
-			p, err := strconv.ParseFloat(btDefPrice.String, 64)
-			if err == nil {
-				defPrice = int(p)
-			}
-		}
-
-		bh, ok := bathhouseMap[typeID]
-		if !ok {
+		bh, exists := bathhouseMap[int(bathhouseID.Int64)]
+		if !exists {
 			bh = &entities.Bathhouse{
-				ID:           typeID,
-				Name:         btName.String,
-				DefaultPrice: defPrice,
-				Houses:       []entities.HouseBathhouse{},
-				FillOptions:  []entities.BathhouseFill{},
+				ID:          int(bathhouseID.Int64),
+				HouseID:     int(houseIDDb.Int64),
+				Name:        name.String,
+				Price:       int(price.Float64),
+				Description: description.String,
+				Images:      images,
+				FillOptions: []entities.BathhouseFillOption{},
 			}
-			bathhouseMap[typeID] = bh
+			bathhouseMap[bh.ID] = bh
 		}
 
-		housePrice := 0
-		if hbPrice.Valid && hbPrice.String != "" {
-			p, err := strconv.ParseFloat(hbPrice.String, 64)
-			if err == nil {
-				housePrice = int(p)
-			}
-		}
-		if hbID.Valid && houseIdDB.Valid {
-			houseKey := [2]int{typeID, int(hbID.Int64)}
-			if _, exists := houseSet[houseKey]; !exists {
-				bh.Houses = append(bh.Houses, entities.HouseBathhouse{
-					ID:          int(hbID.Int64),
-					HouseID:     int(houseIdDB.Int64),
-					Price:       housePrice,
-					Description: hbDesc.String,
-					Images:      hbImgs,
-				})
-				houseSet[houseKey] = struct{}{}
-			}
-		}
-
-		fillPrice := 0
-		if bfoPrice.Valid && bfoPrice.String != "" {
-			p, err := strconv.ParseFloat(bfoPrice.String, 64)
-			if err == nil {
-				fillPrice = int(p)
-			}
-		}
-		if bfoID.Valid {
-			fillKey := [2]int{typeID, int(bfoID.Int64)}
-			if _, exists := fillSet[fillKey]; !exists {
-				bh.FillOptions = append(bh.FillOptions, entities.BathhouseFill{
-					ID:          int(bfoID.Int64),
-					Name:        bfoName.String,
-					Image:       bfoImg.String,
-					Description: bfoDesc.String,
-					Price:       fillPrice,
-				})
-				fillSet[fillKey] = struct{}{}
-			}
+		if fillID.Valid {
+			bh.FillOptions = append(bh.FillOptions, entities.BathhouseFillOption{
+				ID:          int(fillID.Int64),
+				BathhouseID: int(bathhouseID.Int64),
+				Name:        fillName.String,
+				Image:       fillImg.String,
+				Description: fillDesc.String,
+				Price:       int(fillPrice.Float64),
+			})
 		}
 	}
 
-	res := make([]entities.Bathhouse, 0, len(bathhouseMap))
+	result := make([]entities.Bathhouse, 0, len(bathhouseMap))
 	for _, bh := range bathhouseMap {
-		res = append(res, *bh)
+		result = append(result, *bh)
 	}
-	return res, nil
+	return result, nil
 }
 
-func (r *BathhousesRepo) Add(ctx context.Context, bhs []entities.Bathhouse) error {
+func (r *BathhousesRepo) Add(ctx context.Context, bathhouses []entities.Bathhouse) error {
 	const method = "BathhousesRepo.Add"
+
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return errorspkg.NewErrRepoFailed("Begin", method, err)
 	}
-	defer func(tx pgx.Tx, ctx context.Context) {
-		_ = tx.Rollback(ctx)
-	}(tx, ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
-	for _, bh := range bhs {
+	for _, bh := range bathhouses {
 		var id int
 		err = tx.QueryRow(ctx, `
-			INSERT INTO bathhouses_types (name, default_price) VALUES ($1, $2)
-			RETURNING id
-		`, bh.Name, bh.DefaultPrice).Scan(&id)
+			INSERT INTO bathhouses (house_id, name, price, description, images)
+			VALUES ($1, $2, $3, $4, $5) RETURNING id
+		`, bh.HouseID, bh.Name, bh.Price, bh.Description, bh.Images).Scan(&id)
 		if err != nil {
-			return errorspkg.NewErrRepoFailed("Insert bathhouse type", method, err)
+			return errorspkg.NewErrRepoFailed("Insert bathhouse", method, err)
 		}
-		for _, h := range bh.Houses {
-			_, err = tx.Exec(ctx, `
-				INSERT INTO house_bathhouses (
-					house_id,
-				    bathhouse_type_id,                          
-				    price,
-				    description,
-				    images
-				)
-				VALUES (
-					$1,
-				    $2,
-				    $3,
-				    $4, 
-				    $5
-				)
-			`,
-				h.HouseID,
-				id,
-				h.Price,
-				h.Description,
-				h.Images,
-			)
-			if err != nil {
-				return errorspkg.NewErrRepoFailed("Insert house_bathhouses", method, err)
-			}
-		}
+
 		for _, f := range bh.FillOptions {
 			_, err = tx.Exec(ctx, `
-				INSERT INTO bathhouse_fill_options (
-					bathhouse_type_id,
-				    name,
-				    image,
-				    description,
-				    price
-				)
-				VALUES (
-				    $1,
-				    $2,
-				    $3,
-				    $4,
-				    $5
-				)
-			`,
-				id,
-				f.Name,
-				f.Image,
-				f.Description,
-				f.Price,
-			)
+				INSERT INTO bathhouse_fill_options (bathhouse_id, name, image, description, price)
+				VALUES ($1, $2, $3, $4, $5)
+			`, id, f.Name, f.Image, f.Description, f.Price)
 			if err != nil {
 				return errorspkg.NewErrRepoFailed("Insert fill_option", method, err)
 			}
@@ -347,41 +188,26 @@ func (r *BathhousesRepo) Update(ctx context.Context, bh entities.Bathhouse) erro
 	if err != nil {
 		return errorspkg.NewErrRepoFailed("Begin", method, err)
 	}
-	defer func(tx pgx.Tx, ctx context.Context) {
-		_ = tx.Rollback(ctx)
-	}(tx, ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	_, err = tx.Exec(ctx, `
-		UPDATE bathhouses_types SET name=$1, default_price=$2 WHERE id=$3
-	`, bh.Name, bh.DefaultPrice, bh.ID)
+		UPDATE bathhouses SET name=$1, price=$2, description=$3, images=$4 WHERE id=$5
+	`, bh.Name, bh.Price, bh.Description, bh.Images, bh.ID)
 	if err != nil {
-		return errorspkg.NewErrRepoFailed("Update bathhouse_type", method, err)
+		return errorspkg.NewErrRepoFailed("Update bathhouse", method, err)
 	}
 
-	_, err = tx.Exec(ctx, `DELETE FROM house_bathhouses WHERE bathhouse_type_id=$1`, bh.ID)
-	if err != nil {
-		return errorspkg.NewErrRepoFailed("Clear house_bathhouses", method, err)
-	}
-	for _, h := range bh.Houses {
-		_, err = tx.Exec(ctx, `
-			INSERT INTO house_bathhouses (house_id, bathhouse_type_id, price, description, images)
-			VALUES ($1, $2, $3, $4, $5)
-		`, h.HouseID, bh.ID, h.Price, h.Description, h.Images)
-		if err != nil {
-			return errorspkg.NewErrRepoFailed("Insert house_bathhouses (upd)", method, err)
-		}
-	}
-	_, err = tx.Exec(ctx, `DELETE FROM bathhouse_fill_options WHERE bathhouse_type_id=$1`, bh.ID)
+	_, err = tx.Exec(ctx, `DELETE FROM bathhouse_fill_options WHERE bathhouse_id=$1`, bh.ID)
 	if err != nil {
 		return errorspkg.NewErrRepoFailed("Clear fill_options", method, err)
 	}
 	for _, f := range bh.FillOptions {
 		_, err = tx.Exec(ctx, `
-			INSERT INTO bathhouse_fill_options (bathhouse_type_id, name, image, description, price)
+			INSERT INTO bathhouse_fill_options (bathhouse_id, name, image, description, price)
 			VALUES ($1, $2, $3, $4, $5)
 		`, bh.ID, f.Name, f.Image, f.Description, f.Price)
 		if err != nil {
-			return errorspkg.NewErrRepoFailed("Insert fill_option (upd)", method, err)
+			return errorspkg.NewErrRepoFailed("Insert fill_option", method, err)
 		}
 	}
 
@@ -390,9 +216,9 @@ func (r *BathhousesRepo) Update(ctx context.Context, bh entities.Bathhouse) erro
 
 func (r *BathhousesRepo) Delete(ctx context.Context, id int) error {
 	const method = "BathhousesRepo.Delete"
-	_, err := r.pool.Exec(ctx, `DELETE FROM bathhouses_types WHERE id = $1`, id)
+	_, err := r.pool.Exec(ctx, `DELETE FROM bathhouses WHERE id = $1`, id)
 	if err != nil {
-		return errorspkg.NewErrRepoFailed("Delete bathhouse_type", method, err)
+		return errorspkg.NewErrRepoFailed("Delete bathhouse", method, err)
 	}
 	return nil
 }

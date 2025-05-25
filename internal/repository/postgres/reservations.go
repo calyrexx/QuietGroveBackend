@@ -145,7 +145,7 @@ func (r *ReservationsRepo) GetPrice(ctx context.Context, houseID int, extras []e
 		}
 
 		bathhousesPriceQuery := `
-			SELECT default_price FROM bathhouses_types 
+			SELECT price FROM bathhouses 
 				WHERE id = ANY($1)
 		`
 		rows, extErr := r.pool.Query(ctx, bathhousesPriceQuery, bathhouseIds)
@@ -204,7 +204,7 @@ func (r *ReservationsRepo) Create(ctx context.Context, reservation entities.Rese
 	if len(reservation.Bathhouse) > 0 {
 		queryBath := `
 			INSERT INTO bathhouse_reservations (
-				reservation_uuid, type_id, date, time_from, time_to, fill_option_id
+				reservation_uuid, bathhouse_id, date, time_from, time_to, fill_option_id
 			) VALUES ($1, $2, $3::date, $4::time, $5::time, $6)
 		`
 		for _, b := range reservation.Bathhouse {

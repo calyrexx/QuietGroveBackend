@@ -27,6 +27,7 @@ func NewUsecases(
 		ReservationRepo: repo.Reservations,
 		GuestRepo:       repo.Guests,
 		HouseRepo:       repo.Houses,
+		BathhouseRepo:   repo.Bathhouses,
 		PCoefs:          config.PriceCoefficients,
 		Logger:          logger,
 		Notifier:        tgBot,
