@@ -110,5 +110,5 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	extras.HandleFunc(idPath, dep.Handlers.Extras.Delete).Methods(http.MethodDelete)
 	extras.HandleFunc(emptyPath, dep.Handlers.Extras.GetAll).Methods(http.MethodGet)
 
-	return middleware.WithCORS(router)
+	return middleware.WithCORS(r)
 }
