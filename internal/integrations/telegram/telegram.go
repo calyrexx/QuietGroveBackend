@@ -120,6 +120,36 @@ func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessa
 	return nil
 }
 
+func (a *Adapter) NewApplicationForEvent(res entities.NewApplication) error {
+	ctx := context.Background()
+
+	text := fmt.Sprintf(
+		"🎉 *Новая заявка на мероприятие!*\n"+
+			"👤 Имя: %s\n"+
+			"📞 Телефон: %s\n"+
+			"📅 Дата: %s\n"+
+			"👥 Кол-во гостей: %d",
+		res.Name,
+		res.Phone,
+		res.CheckIn,
+		res.GuestsCount,
+	)
+
+	for _, chatID := range a.adminChatIDs {
+		_, err := a.bot.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID:    chatID,
+				Text:      text,
+				ParseMode: "Markdown",
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (a *Adapter) RegisterHandlers(ver *usecases.Verification) {
 	a.verifSvc = ver
 

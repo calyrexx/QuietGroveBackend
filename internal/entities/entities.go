@@ -149,4 +149,11 @@ type (
 		Description string
 		Price       int
 	}
+
+	NewApplication struct {
+		Name        string
+		Phone       string
+		CheckIn     string
+		GuestsCount int
+	}
 )
