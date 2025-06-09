@@ -27,6 +27,7 @@ type (
 		Name  string
 		Email string
 		Phone string
+		TgID  int64
 	}
 
 	Reservation struct {

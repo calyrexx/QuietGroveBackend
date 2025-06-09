@@ -15,7 +15,8 @@ const reservationStub = "confirmed"
 
 type (
 	Notifier interface {
-		ReservationCreated(res entities.ReservationCreatedMessage) error
+		ReservationCreatedForAdmin(res entities.ReservationCreatedMessage) error
+		ReservationCreatedForUser(res entities.ReservationCreatedMessage, tgID int64) error
 	}
 
 	ReservationDependencies struct {
@@ -124,7 +125,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		return response, errorspkg.NewErrHouseUnavailable(req.HouseID, req.CheckIn, req.CheckOut)
 	}
 
-	guest, err := u.guestRepo.FindOrCreate(ctx, req.Guest)
+	guest, err := u.guestRepo.Get(ctx, req.Guest)
 	if err != nil {
 		return response, err
 	}
@@ -151,7 +152,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		return response, err
 	}
 
-	go func(res entities.Reservation) {
+	go func(res entities.Reservation, guestTgID int64) {
 		house, _ := u.houseRepo.GetOne(context.Background(), res.HouseID)
 		bathhouseMsg := make([]entities.BathhouseMessage, 0, len(res.Bathhouse))
 		for _, reqBh := range req.Bathhouse {
@@ -175,10 +176,13 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 			TotalPrice:  res.TotalPrice,
 			Bathhouse:   bathhouseMsg,
 		}
-		if errSend := u.notifier.ReservationCreated(reservationMsg); errSend != nil {
+		if errSend := u.notifier.ReservationCreatedForAdmin(reservationMsg); errSend != nil {
 			u.logger.Error("telegram notify", zeroslog.ErrorKey, err)
 		}
-	}(reservation)
+		if errSendToUser := u.notifier.ReservationCreatedForUser(reservationMsg, guestTgID); errSendToUser != nil {
+			u.logger.Error("telegram user notify", zeroslog.ErrorKey, err)
+		}
+	}(reservation, guest.TgId)
 
 	return reservation, nil
 }

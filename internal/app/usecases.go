@@ -61,8 +61,9 @@ func NewUsecases(
 	}
 
 	verificationUsecase, err := usecases.NewVerification(&usecases.VerificationDependencies{
-		Repo: repo.Verification,
-		TTL:  time.Hour,
+		Repo:       repo.Verification,
+		GuestsRepo: repo.Guests,
+		TTL:        time.Hour,
 	})
 	if err != nil {
 		return nil, err
