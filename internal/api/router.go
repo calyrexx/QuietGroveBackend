@@ -14,6 +14,7 @@ const (
 	extrasPath       = "/extras"
 	reservationPath  = "/reservation"
 	verificationPath = "/verification"
+	eventsPath       = "/events"
 	bathhousesPath   = "/bathhouses"
 	idPath           = "/{id}"
 	emptyPath        = ""
@@ -54,6 +55,10 @@ type IVerification interface {
 	VerifyIdentity(w http.ResponseWriter, r *http.Request)
 }
 
+type IEvents interface {
+	NewApplication(w http.ResponseWriter, r *http.Request)
+}
+
 type IGeneral interface {
 	Health(w http.ResponseWriter, r *http.Request)
 	Version(w http.ResponseWriter, r *http.Request)
@@ -65,6 +70,7 @@ type Handlers struct {
 	Bathhouses   IBathhouses
 	Extras       IExtras
 	Verification IVerification
+	Events       IEvents
 	General      IGeneral
 }
 
@@ -86,6 +92,8 @@ func NewRouter(dep RouterDependencies) http.Handler {
 	r.HandleFunc(versionPath, dep.Handlers.General.Version)
 
 	r.HandleFunc(verificationPath, dep.Handlers.Verification.VerifyIdentity).Methods("POST")
+
+	r.HandleFunc(eventsPath, dep.Handlers.Events.NewApplication).Methods("POST")
 
 	reservations := r.PathPrefix(reservationPath).Subrouter()
 	reservations.HandleFunc(emptyPath, dep.Handlers.Reservations.GetAvailableHouses).Methods(http.MethodGet)

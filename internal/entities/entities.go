@@ -27,6 +27,7 @@ type (
 		Name  string
 		Email string
 		Phone string
+		TgID  int64
 	}
 
 	Reservation struct {
@@ -110,7 +111,7 @@ type (
 	VerificationStatus string
 
 	Verification struct {
-		ID         int64
+		ID         string
 		Code       string
 		Email      string
 		Phone      string
@@ -147,5 +148,12 @@ type (
 		Image       string
 		Description string
 		Price       int
+	}
+
+	NewApplication struct {
+		Name        string
+		Phone       string
+		CheckIn     string
+		GuestsCount int
 	}
 )

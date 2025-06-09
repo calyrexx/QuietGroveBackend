@@ -11,6 +11,7 @@ type Controllers struct {
 	Bathhouses   *controllers.Bathhouses
 	Extras       *controllers.Extras
 	Verification *controllers.Verification
+	Events       *controllers.Events
 }
 
 func NewControllers(
@@ -53,11 +54,19 @@ func NewControllers(
 		return nil, err
 	}
 
+	eventsController, err := controllers.NewEvents(&controllers.EventsDependencies{
+		UseCase: usecases.events,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &Controllers{
 		Reservations: reservationsController,
 		Houses:       housesController,
 		Bathhouses:   bathhousesController,
 		Extras:       extrasController,
 		Verification: verificationController,
+		Events:       eventsController,
 	}, nil
 }

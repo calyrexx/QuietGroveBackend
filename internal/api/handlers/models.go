@@ -81,4 +81,11 @@ type (
 		Description string `json:"description"`
 		Price       int    `json:"price"`
 	}
+
+	EventsNewApplication struct {
+		Name        string `json:"name"`
+		Phone       string `json:"phone"`
+		CheckIn     string `json:"checkIn"`
+		GuestsCount int    `json:"guestsCount"`
+	}
 )

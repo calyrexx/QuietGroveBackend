@@ -35,7 +35,7 @@ func NewAdapter(creds *configuration.TelegramBot) (*Adapter, error) {
 	}, nil
 }
 
-func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) error {
+func (a *Adapter) ReservationCreatedForAdmin(msg entities.ReservationCreatedMessage) error {
 	ctx := context.Background()
 
 	text := fmt.Sprintf(
@@ -63,6 +63,77 @@ func (a *Adapter) ReservationCreated(msg entities.ReservationCreatedMessage) err
 			)
 		}
 	}
+
+	for _, chatID := range a.adminChatIDs {
+		_, err := a.bot.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID:    chatID,
+				Text:      text,
+				ParseMode: "Markdown",
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessage, tgID int64) error {
+	ctx := context.Background()
+
+	text := fmt.Sprintf(
+		"✅ *Ваше бронирование подтверждено!*\n"+
+			"🏠 Дом: %s\n"+
+			"📅 %s → %s\n"+
+			"👥 %d гостей\n"+
+			"💳 Стоимость проживания: %d ₽\n"+
+			"📞 Наш номер для связи: +79867427283\n",
+		msg.House,
+		msg.CheckIn.Format("02.01.2006"), msg.CheckOut.Format("02.01.2006"),
+		msg.GuestsCount, msg.TotalPrice,
+	)
+
+	if len(msg.Bathhouse) > 0 {
+		text += "\n\n🔥 *Забронированы дополнительно:*"
+		for _, bath := range msg.Bathhouse {
+			text += fmt.Sprintf(
+				"\n- %s: %s с %s до %s",
+				bath.Name,
+				bath.Date, // TODO исправить на 02.01.2006
+				bath.TimeFrom,
+				bath.TimeTo,
+			)
+		}
+	}
+
+	_, err := a.bot.SendMessage(ctx,
+		&bot.SendMessageParams{
+			ChatID:    tgID,
+			Text:      text,
+			ParseMode: "Markdown",
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Adapter) NewApplicationForEvent(res entities.NewApplication) error {
+	ctx := context.Background()
+
+	text := fmt.Sprintf(
+		"🎉 *Новая заявка на мероприятие!*\n"+
+			"👤 Имя: %s\n"+
+			"📞 Телефон: %s\n"+
+			"📅 Дата: %s\n"+
+			"👥 Кол-во гостей: %d",
+		res.Name,
+		res.Phone,
+		res.CheckIn,
+		res.GuestsCount,
+	)
 
 	for _, chatID := range a.adminChatIDs {
 		_, err := a.bot.SendMessage(ctx,

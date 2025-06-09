@@ -12,26 +12,32 @@ import (
 )
 
 type VerificationDependencies struct {
-	Repo repository.IVerification
-	TTL  time.Duration
+	Repo       repository.IVerification
+	GuestsRepo repository.IGuests
+	TTL        time.Duration
 }
 
 type Verification struct {
-	repo repository.IVerification
-	ttl  time.Duration
+	repo       repository.IVerification
+	guestsRepo repository.IGuests
+	ttl        time.Duration
 }
 
 func NewVerification(d *VerificationDependencies) (*Verification, error) {
 	if d.Repo == nil {
 		return nil, errorspkg.NewErrConstructorDependencies("NewVerification", "Repo", "nil")
 	}
+	if d.GuestsRepo == nil {
+		return nil, errorspkg.NewErrConstructorDependencies("NewVerification", "GuestsRepo", "nil")
+	}
 	if d.TTL == 0 {
 		return nil, errorspkg.NewErrConstructorDependencies("NewVerification", "TTL", "0")
 	}
 
 	return &Verification{
-		repo: d.Repo,
-		ttl:  d.TTL,
+		repo:       d.Repo,
+		guestsRepo: d.GuestsRepo,
+		ttl:        d.TTL,
 	}, nil
 }
 
@@ -39,7 +45,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone, name string) 
 	code := sixDigits()
 	exp := time.Now().Add(s.ttl)
 
-	_, err := s.repo.Create(ctx, entities.Verification{
+	err := s.repo.Create(ctx, entities.Verification{
 		Code:      code,
 		Email:     email,
 		Phone:     phone,
@@ -47,6 +53,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone, name string) 
 		Status:    entities.VerifPending,
 		ExpiresAt: exp,
 	})
+
 	return code, err
 }
 
@@ -60,7 +67,22 @@ func (s *Verification) Approve(ctx context.Context, code string, tgID int64) err
 		return errorspkg.ErrInvalidVerificationCode
 	}
 
-	return s.repo.Approve(ctx, v.ID, tgID)
+	err = s.repo.Approve(ctx, v.ID, tgID)
+	if err != nil {
+		return err
+	}
+
+	err = s.guestsRepo.Create(ctx, entities.Guest{
+		Name:  v.Name,
+		Email: v.Email,
+		Phone: v.Phone,
+		TgID:  tgID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func sixDigits() string {

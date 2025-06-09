@@ -7,7 +7,8 @@ import (
 )
 
 type IGuests interface {
-	FindOrCreate(ctx context.Context, guest entities.Guest) (Guest, error)
+	Get(ctx context.Context, guest entities.Guest) (Guest, error)
+	Create(ctx context.Context, guest entities.Guest) error
 }
 
 type Guest struct {
@@ -15,4 +16,5 @@ type Guest struct {
 	Name  string
 	Phone string
 	Email string
+	TgId  int64
 }

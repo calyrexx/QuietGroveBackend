@@ -72,14 +72,23 @@ func NewRest(
 		return nil, err
 	}
 
+	eventsHandler, err := handlers.NewEvents(handlers.EventsDependencies{
+		Controller: controllers.Events,
+		Logger:     logger,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	router := api.NewRouter(api.RouterDependencies{
 		Handlers: api.Handlers{
 			Reservations: reservationsHandler,
 			Houses:       housesHandler,
 			Bathhouses:   bathhousesHandler,
 			Extras:       extrasHandler,
-			General:      general,
 			Verification: verificationHandler,
+			Events:       eventsHandler,
+			General:      general,
 		},
 		Middlewares: api.Middlewares{
 			PanicRecovery: panicRecoveryMiddleware.Middleware,

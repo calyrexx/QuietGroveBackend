@@ -14,6 +14,7 @@ type Usecases struct {
 	bathhouses   *usecases.Bathhouses
 	extras       *usecases.Extras
 	verification *usecases.Verification
+	events       *usecases.Events
 }
 
 func NewUsecases(
@@ -61,8 +62,17 @@ func NewUsecases(
 	}
 
 	verificationUsecase, err := usecases.NewVerification(&usecases.VerificationDependencies{
-		Repo: repo.Verification,
-		TTL:  time.Hour,
+		Repo:       repo.Verification,
+		GuestsRepo: repo.Guests,
+		TTL:        time.Hour,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	eventsUsecase, err := usecases.NewEvents(&usecases.EventsDependencies{
+		Logger:   logger,
+		Notifier: tgBot,
 	})
 	if err != nil {
 		return nil, err
@@ -74,5 +84,6 @@ func NewUsecases(
 		bathhouses:   bathhousesUsecase,
 		extras:       extrasUsecase,
 		verification: verificationUsecase,
+		events:       eventsUsecase,
 	}, nil
 }
