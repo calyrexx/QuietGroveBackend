@@ -39,7 +39,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone, name string) 
 	code := sixDigits()
 	exp := time.Now().Add(s.ttl)
 
-	_, err := s.repo.Create(ctx, entities.Verification{
+	err := s.repo.Create(ctx, entities.Verification{
 		Code:      code,
 		Email:     email,
 		Phone:     phone,
@@ -47,6 +47,7 @@ func (s *Verification) Generate(ctx context.Context, email, phone, name string) 
 		Status:    entities.VerifPending,
 		ExpiresAt: exp,
 	})
+	
 	return code, err
 }
 

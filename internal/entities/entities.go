@@ -110,7 +110,7 @@ type (
 	VerificationStatus string
 
 	Verification struct {
-		ID         int64
+		ID         string
 		Code       string
 		Email      string
 		Phone      string

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,11 +17,11 @@ func NewVerificationRepo(pool *pgxpool.Pool) *VerificationRepo {
 	}
 }
 
-func (r *VerificationRepo) Create(ctx context.Context, v entities.Verification) (int64, error) {
-	var id int64
-
+func (r *VerificationRepo) Create(ctx context.Context, v entities.Verification) error {
 	query := `
 		INSERT INTO verifications (
+		    uuid,
+		    name,
 			code,
 		    email,
 		    phone,
@@ -32,19 +33,20 @@ func (r *VerificationRepo) Create(ctx context.Context, v entities.Verification) 
         	$2,
             $3,
             $4,
-            $5
-        ) 
-        RETURNING id`
+            $5,
+            $6,
+            $7
+        )`
 
-	err := r.pool.QueryRow(ctx, query, v.Code, v.Email, v.Phone, v.Status, v.ExpiresAt).Scan(&id)
+	_, err := r.pool.Exec(ctx, query, uuid.New(), v.Name, v.Code, v.Email, v.Phone, v.Status, v.ExpiresAt)
 
-	return id, err
+	return err
 }
 
 func (r *VerificationRepo) GetByCode(ctx context.Context, code string) (entities.Verification, error) {
 	query := `
 		SELECT 
-			id,
+			uuid,
 		    code,
 		    email,
 		    phone,
@@ -71,11 +73,11 @@ func (r *VerificationRepo) GetByCode(ctx context.Context, code string) (entities
 	return v, err
 }
 
-func (r *VerificationRepo) Approve(ctx context.Context, id int64, tgUserID int64) error {
+func (r *VerificationRepo) Approve(ctx context.Context, id string, tgUserID int64) error {
 	query := `
 		UPDATE verifications
         SET status=$1, tg_user_id=$2, verified_at=now()
-        WHERE id=$3`
+        WHERE uuid=$3`
 
 	_, err := r.pool.Exec(ctx, query,
 		entities.VerifApproved,
