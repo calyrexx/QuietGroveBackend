@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-const Version = "v0.3.0"
+const Version = "v0.5.0"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
