@@ -251,7 +251,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"houseID\": 1,\n    \"guest\": {\n        \"name\": \"Любимая Дашуля\",\n        \"email\": \"ya.piyavkaa@gmail.com\",\n        \"phone\": \"+79867427283\"\n    },\n    \"checkIn\": \"2025-02-05\",\n    \"checkOut\": \"2025-02-10\",\n    \"guestsCount\": 7,\n    \"bathhouses\": [\n        {\n            \"id\": 3,\n            \"date\": \"2025-02-06\",\n            \"timeFrom\": \"12:00\",\n            \"timeTo\": \"16:00\",\n            \"fillId\": 2\n        },\n        {\n            \"id\": 2,\n            \"date\": \"2025-02-06\",\n            \"timeFrom\": \"12:00\",\n            \"timeTo\": \"16:00\"\n        }\n    ]\n    //\"extras\": [\n    //    {\n    //        \"id\": 1,\n    //        \"quantity\": 3,\n    //        \"amount\": 2\n    //    }\n    //]\n}",
+							"raw": "{\n    \"houseID\": 1,\n    \"guest\": {\n        \"name\": \"Александр Очкаленко\",\n        \"email\": \"xdxkxnjr@gmail.com\",\n        \"phone\": \"+79965667446\"\n    },\n    \"checkIn\": \"2025-07-05\",\n    \"checkOut\": \"2025-07-10\",\n    \"guestsCount\": 7,\n    \"bathhouses\": [\n        {\n            \"id\": 3,\n            \"date\": \"2025-07-06\",\n            \"timeFrom\": \"12:00\",\n            \"timeTo\": \"16:00\",\n            \"fillId\": 2\n        },\n        {\n            \"id\": 2,\n            \"date\": \"2025-07-06\",\n            \"timeFrom\": \"12:00\",\n            \"timeTo\": \"16:00\"\n        }\n    ]\n    //\"extras\": [\n    //    {\n    //        \"id\": 1,\n    //        \"quantity\": 3,\n    //        \"amount\": 2\n    //    }\n    //]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -375,7 +375,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phone\": \"+79965667446\",\n    \"email\": \"xdxkxnjr@gmail.com\",\n    \"name\": \"john doe\"\n}",
+							"raw": "{\n    \"phone\": \"+79965667446\",\n    \"email\": \"xdxkxnjr@gmail.com\",\n    \"name\": \"Александр Очкаленко\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -389,6 +389,37 @@
 							],
 							"path": [
 								"verification"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "events",
+			"item": [
+				{
+					"name": "new application",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"+79965667446\",\n    \"name\": \"Александр Очкаленко\",\n    \"checkIn\": \"2025-07-05\",\n    \"guestsCount\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/events",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"events"
 							]
 						}
 					},
