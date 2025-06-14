@@ -1,0 +1,40 @@
+name: Go CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test-lint:
+    name: Build, Test and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.3'
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Install dependencies
+        run: go mod download && go install go.uber.org/mock/mockgen@latest
+
+      - name: Generate mocks with uber/mock
+        run: go generate ./...
+
+      - name: Verify build
+        run: GOOS=linux CGO_ENABLED=0 go build -v -o ./bin/app ./cmd/main.go
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v2.1.6
+          args: --timeout=5m
