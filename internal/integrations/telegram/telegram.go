@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
 	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
-	"regexp"
-
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"regexp"
+	"strings"
 
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/calyrexx/QuietGrooveBackend/internal/usecases"
@@ -55,11 +55,12 @@ func (a *Adapter) ReservationCreatedForAdmin(msg entities.ReservationCreatedMess
 		text += "\n\n🔥 *Забронированы дополнительно:*"
 		for _, bath := range msg.Bathhouse {
 			text += fmt.Sprintf(
-				"\n- %s: %s с %s до %s",
+				"\n- %s: %s с %s до %s. %s",
 				bath.Name,
-				bath.Date, // TODO исправить на 02.01.2006
+				strings.ReplaceAll(bath.Date, "-", "."),
 				bath.TimeFrom,
 				bath.TimeTo,
+				*bath.FillOption,
 			)
 		}
 	}
@@ -100,7 +101,7 @@ func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessa
 			text += fmt.Sprintf(
 				"\n- %s: %s с %s до %s",
 				bath.Name,
-				bath.Date, // TODO исправить на 02.01.2006
+				strings.ReplaceAll(bath.Date, "-", "."),
 				bath.TimeFrom,
 				bath.TimeTo,
 			)
@@ -131,7 +132,7 @@ func (a *Adapter) NewApplicationForEvent(res entities.NewApplication) error {
 			"👥 Кол-во гостей: %d",
 		res.Name,
 		res.Phone,
-		res.CheckIn,
+		strings.ReplaceAll(res.CheckIn, "-", "."),
 		res.GuestsCount,
 	)
 

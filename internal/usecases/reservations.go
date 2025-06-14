@@ -157,11 +157,18 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		bathhouseMsg := make([]entities.BathhouseMessage, 0, len(res.Bathhouse))
 		for _, reqBh := range req.Bathhouse {
 			bh, _ := u.bathhouseRepo.GetByID(context.Background(), reqBh.TypeID)
+			var fillOption string
+			for _, bhFillOptions := range bh.FillOptions {
+				if bhFillOptions.ID == reqBh.FillOptionID {
+					fillOption = bhFillOptions.Name
+				}
+			}
 			bathhouseMsg = append(bathhouseMsg, entities.BathhouseMessage{
-				Name:     bh.Name,
-				Date:     reqBh.Date,
-				TimeFrom: reqBh.TimeFrom,
-				TimeTo:   reqBh.TimeTo,
+				Name:       bh.Name,
+				Date:       reqBh.Date,
+				TimeFrom:   reqBh.TimeFrom,
+				TimeTo:     reqBh.TimeTo,
+				FillOption: &fillOption,
 				// TODO продумать как передавать наполнение чана
 			})
 		}
