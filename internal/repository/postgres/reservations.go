@@ -72,7 +72,9 @@ func (r *ReservationsRepo) CheckAvailability(ctx context.Context, req entities.C
 	query := `
 		SELECT NOT EXISTS (
 			SELECT 1 FROM reservations
-			WHERE house_id = $1 AND stay && daterange($2::date, $3::date)
+			WHERE house_id = $1 
+				AND stay && daterange($2::date, $3::date)
+				AND status NOT IN ('cancelled', 'checked_out')
 			UNION ALL
 			SELECT 1 FROM blackouts
 			WHERE house_id = $1 AND period && daterange($2::date, $3::date)
