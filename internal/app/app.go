@@ -37,7 +37,7 @@ func New(
 		return nil, err
 	}
 
-	tgBot, err := telegram.NewAdapter(&creds.TelegramBot)
+	tgBot, err := telegram.NewAdapter(&creds.TelegramBot, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func New(
 		return nil, err
 	}
 
-	tgBot.RegisterHandlers(usecases.verification)
+	tgBot.RegisterHandlers(usecases.verification, usecases.reservations)
 
 	controllers, err := NewControllers(logger, usecases)
 	if err != nil {

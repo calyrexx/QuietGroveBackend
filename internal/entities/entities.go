@@ -44,6 +44,26 @@ type (
 		Bathhouse   []BathhouseReservation
 	}
 
+	ReservationMessage struct {
+		UUID        string
+		HouseName   string
+		ImageURL    string
+		CheckIn     time.Time // [checkIn, checkOut)
+		CheckOut    time.Time
+		GuestsCount int
+		Status      string
+		TotalPrice  int
+		Bathhouse   []BathhouseReservationMessage
+	}
+
+	BathhouseReservationMessage struct {
+		Name           string
+		Date           string
+		TimeFrom       string
+		TimeTo         string
+		FillOptionName *string
+	}
+
 	ReservationCreatedMessage struct {
 		House       string
 		GuestName   string
