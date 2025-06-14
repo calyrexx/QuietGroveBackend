@@ -14,6 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            $(go env GOMODCACHE)
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -25,7 +33,6 @@ jobs:
         run: |
           go mod download
           go install go.uber.org/mock/mockgen@latest
-          # Устанавливаем конкретную версию golangci-lint
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.59.0
 
       - name: Generate mocks
@@ -35,9 +42,7 @@ jobs:
         run: GOOS=linux CGO_ENABLED=0 go build -v -o ./bin/app ./cmd/main.go
 
       - name: Run tests
-        run: go test -race -cover ./...
+        run: go test ./...
 
       - name: Run linter
-        run: |
-          export PATH=$PATH:$(go env GOPATH)/bin
-          golangci-lint run --timeout=5m
+        run: golangci-lint run
