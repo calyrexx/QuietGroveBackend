@@ -72,7 +72,9 @@ func (r *ReservationsRepo) CheckAvailability(ctx context.Context, req entities.C
 	query := `
 		SELECT NOT EXISTS (
 			SELECT 1 FROM reservations
-			WHERE house_id = $1 AND stay && daterange($2::date, $3::date)
+			WHERE house_id = $1 
+				AND stay && daterange($2::date, $3::date)
+				AND status NOT IN ('cancelled', 'checked_out')
 			UNION ALL
 			SELECT 1 FROM blackouts
 			WHERE house_id = $1 AND period && daterange($2::date, $3::date)
@@ -228,4 +230,126 @@ func (r *ReservationsRepo) Create(ctx context.Context, reservation entities.Rese
 	}
 
 	return nil
+}
+
+func (r *ReservationsRepo) GetByTelegramID(ctx context.Context, telegramID int64) ([]entities.ReservationMessage, error) {
+	const method = "reservationsRepo.GetReservationsByTelegramID"
+
+	query := `
+		SELECT
+			r.uuid,
+			h.name,
+			LOWER(r.stay) AS check_in,
+			UPPER(r.stay) AS check_out,
+			r.guests_count,
+			r.status,
+			r.total_price
+		FROM reservations r
+		JOIN guests g ON r.guest_uuid = g.uuid
+		JOIN houses h ON r.house_id = h.id
+		WHERE g.tg_user_id = $1
+		ORDER BY check_in DESC
+	`
+
+	rows, err := r.pool.Query(ctx, query, telegramID)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("Query", method, err)
+	}
+	defer rows.Close()
+
+	var list []entities.ReservationMessage
+	for rows.Next() {
+		var res entities.ReservationMessage
+		var reservationUUID string
+		if err = rows.Scan(
+			&reservationUUID,
+			&res.HouseName,
+			&res.CheckIn,
+			&res.CheckOut,
+			&res.GuestsCount,
+			&res.Status,
+			&res.TotalPrice,
+		); err != nil {
+			return nil, errorspkg.NewErrRepoFailed("Scan", method, err)
+		}
+		res.UUID = reservationUUID
+		list = append(list, res)
+	}
+	return list, nil
+}
+
+func (r *ReservationsRepo) GetDetailsByUUID(ctx context.Context, telegramID int64, uuid string) (entities.ReservationMessage, error) {
+	const method = "reservationsRepo.GetReservationDetailsByUUID"
+
+	query := `
+		SELECT
+			r.uuid,
+			h.name AS house_name,
+			LOWER(r.stay) AS check_in,
+			UPPER(r.stay) AS check_out,
+			r.guests_count,
+			r.status,
+			r.total_price
+		FROM reservations r
+		JOIN guests g ON r.guest_uuid = g.uuid
+		JOIN houses h ON r.house_id = h.id
+		WHERE r.uuid = $1
+			AND g.tg_user_id = $2
+	`
+
+	var res entities.ReservationMessage
+	var resUUID string
+	err := r.pool.QueryRow(ctx, query, uuid, telegramID).Scan(
+		&resUUID,
+		&res.HouseName,
+		&res.CheckIn,
+		&res.CheckOut,
+		&res.GuestsCount,
+		&res.Status,
+		&res.TotalPrice,
+	)
+	if err != nil {
+		return entities.ReservationMessage{}, errorspkg.NewErrRepoFailed("QueryRow", method, err)
+	}
+	res.UUID = resUUID
+
+	bathQuery := `
+		SELECT
+			bh.name,
+			br.date,
+			TO_CHAR(br.time_from, 'HH24:MI'),
+			TO_CHAR(br.time_to, 'HH24:MI'),
+			fo.name
+		FROM bathhouse_reservations br
+		JOIN bathhouses bh ON br.bathhouse_id = bh.id
+		LEFT JOIN bathhouse_fill_options fo ON br.fill_option_id = fo.id
+		WHERE br.reservation_uuid = $1
+		ORDER BY br.date, br.time_from
+	`
+
+	bathRows, err := r.pool.Query(ctx, bathQuery, uuid)
+	if err != nil {
+		return entities.ReservationMessage{}, errorspkg.NewErrRepoFailed("Query (bathhouses)", method, err)
+	}
+	defer bathRows.Close()
+
+	var baths []entities.BathhouseReservationMessage
+	for bathRows.Next() {
+		var bath entities.BathhouseReservationMessage
+		var date time.Time
+		if err = bathRows.Scan(
+			&bath.Name,
+			&date,
+			&bath.TimeFrom,
+			&bath.TimeTo,
+			&bath.FillOptionName,
+		); err != nil {
+			return entities.ReservationMessage{}, errorspkg.NewErrRepoFailed("Scan (bathhouses)", method, err)
+		}
+		bath.Date = date.Format("2006.01.02")
+		baths = append(baths, bath)
+	}
+	res.Bathhouse = baths
+
+	return res, nil
 }

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const reservationStub = "confirmed"
+const reservationConfirmed = "confirmed"
 
 type (
 	Notifier interface {
@@ -143,7 +143,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		CheckIn:     req.CheckIn,
 		CheckOut:    req.CheckOut,
 		GuestsCount: req.GuestsCount,
-		Status:      reservationStub,
+		Status:      reservationConfirmed,
 		TotalPrice:  totalPrice,
 		Bathhouse:   req.Bathhouse,
 	}
@@ -157,10 +157,10 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		bathhouseMsg := make([]entities.BathhouseMessage, 0, len(res.Bathhouse))
 		for _, reqBh := range req.Bathhouse {
 			bh, _ := u.bathhouseRepo.GetByID(context.Background(), reqBh.TypeID)
-			var fillOption string
+			var fillOption *string
 			for _, bhFillOptions := range bh.FillOptions {
 				if bhFillOptions.ID == reqBh.FillOptionID {
-					fillOption = bhFillOptions.Name
+					fillOption = &bhFillOptions.Name
 				}
 			}
 			bathhouseMsg = append(bathhouseMsg, entities.BathhouseMessage{
@@ -168,8 +168,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 				Date:       reqBh.Date,
 				TimeFrom:   reqBh.TimeFrom,
 				TimeTo:     reqBh.TimeTo,
-				FillOption: &fillOption,
-				// TODO продумать как передавать наполнение чана
+				FillOption: fillOption,
 			})
 		}
 
@@ -192,6 +191,33 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 	}(reservation, guest.TgId)
 
 	return reservation, nil
+}
+
+func (u *Reservation) GetByTelegramID(ctx context.Context, userTgID int64) ([]entities.ReservationMessage, error) {
+	res, err := u.reservationRepo.GetByTelegramID(ctx, userTgID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (u *Reservation) GetDetailsByUUID(ctx context.Context, userTgID int64, uuid string) (entities.ReservationMessage, error) {
+	res, err := u.reservationRepo.GetDetailsByUUID(ctx, userTgID, uuid)
+	if err != nil {
+		return entities.ReservationMessage{}, err
+	}
+
+	switch res.HouseName {
+	case "Барнхаус":
+		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237710/houses1_ebawfo.webp"
+	case "Коттедж":
+		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237737/houses8_pbv273.jpg"
+	case "Глэмпинг":
+		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237765/houses15_djgvjf.webp"
+	}
+
+	return res, nil
 }
 
 func (u *Reservation) calculateTotalPrice(basePrice, extrasPrice int, checkIn, checkOut time.Time) int {
