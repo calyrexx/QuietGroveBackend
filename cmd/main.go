@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/calyrexx/QuietGrooveBackend/internal/app"
 	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
 	"github.com/calyrexx/zeroslog"
@@ -13,7 +12,7 @@ import (
 	"syscall"
 )
 
-const Version = "v0.5.0"
+const Version = "v0.6.0"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -25,7 +24,7 @@ func main() {
 		zeroslog.WithTimeFormat("2006-01-02 15:04:05.000 -07:00"),
 	))
 
-	logger.Info(fmt.Sprintf("app version: %s", Version))
+	logger.Info("Starting app...", "version", Version)
 
 	config, err := configuration.NewConfig()
 	if err != nil {
@@ -54,7 +53,7 @@ func main() {
 		return
 	}
 
-	logger.Info("App has been started!")
+	logger.Info("App has been started!", "version", Version)
 	<-ctx.Done()
 	logger.Info("Please wait, services are stopping...")
 	wg.Wait()

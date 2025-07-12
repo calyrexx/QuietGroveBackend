@@ -97,6 +97,30 @@ func (r *ReservationsRepo) CheckAvailability(ctx context.Context, req entities.C
 	return available, nil
 }
 
+func (r *ReservationsRepo) Cancel(ctx context.Context, userTgId int64, reservationUUID string) error {
+	const method = "reservationsRepo.Cancel"
+
+	query := `
+		UPDATE reservations
+		SET 
+			status = 'cancelled',
+			updated_at = NOW()
+		WHERE uuid = $1
+		AND guest_uuid IN (
+			SELECT uuid 
+			FROM guests 
+			WHERE tg_user_id = $2
+		)
+	`
+
+	_, err := r.pool.Exec(ctx, query, reservationUUID, userTgId)
+	if err != nil {
+		return errorspkg.NewErrRepoFailed("QueryRow", method, err)
+	}
+
+	return nil
+}
+
 func (r *ReservationsRepo) GetPrice(ctx context.Context, houseID int, extras []entities.ReservationExtra, bathhouses []entities.BathhouseReservation) (entities.GetPrice, error) {
 	const method = "reservationsRepo.GetPrice"
 

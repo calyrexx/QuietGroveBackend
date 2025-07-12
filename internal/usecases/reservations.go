@@ -220,6 +220,10 @@ func (u *Reservation) GetDetailsByUUID(ctx context.Context, userTgID int64, uuid
 	return res, nil
 }
 
+func (u *Reservation) Cancel(ctx context.Context, userTgID int64, uuid string) error {
+	return u.reservationRepo.Cancel(ctx, userTgID, uuid)
+}
+
 func (u *Reservation) calculateTotalPrice(basePrice, extrasPrice int, checkIn, checkOut time.Time) int {
 	total := 0.0
 	nights := int(checkOut.Sub(checkIn).Hours() / 24)

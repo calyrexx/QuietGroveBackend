@@ -105,7 +105,38 @@ func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessa
 }
 
 func (a *Adapter) myReservationsHandler(ctx context.Context, b *bot.Bot, u *models.Update) {
-	tgID := u.Message.Chat.ID
+	var (
+		tgID                  int64
+		messageIdToDeleteBot  int
+		messageIdToDeleteUser int
+	)
+	if u.CallbackQuery == nil {
+		tgID = u.Message.Chat.ID
+		messageIdToDeleteUser = u.Message.ID
+	} else {
+		tgID = u.CallbackQuery.From.ID
+		messageIdToDeleteBot = u.CallbackQuery.Message.Message.ID
+	}
+
+	if messageIdToDeleteBot > 0 {
+		_, err := a.bot.DeleteMessage(ctx, &bot.DeleteMessageParams{
+			ChatID:    tgID,
+			MessageID: messageIdToDeleteBot,
+		})
+		if err != nil {
+			a.logger.Error(err.Error())
+		}
+	}
+
+	if messageIdToDeleteUser > 0 {
+		_, err := a.bot.DeleteMessage(ctx, &bot.DeleteMessageParams{
+			ChatID:    tgID,
+			MessageID: messageIdToDeleteUser,
+		})
+		if err != nil {
+			a.logger.Error(err.Error())
+		}
+	}
 
 	reservations, err := a.reservationSvc.GetByTelegramID(ctx, tgID)
 	if err != nil {
@@ -134,7 +165,8 @@ func (a *Adapter) myReservationsHandler(ctx context.Context, b *bot.Bot, u *mode
 	for _, res := range reservations {
 		text := fmt.Sprintf(
 			"📅 %s → %s 🏠 %s",
-			res.CheckIn.Format("02.01"), res.CheckOut.Format("02.01"),
+			res.CheckIn.Format("02.01"),
+			res.CheckOut.Format("02.01"),
 			res.HouseName)
 		btn := models.InlineKeyboardButton{
 			Text:         text,
@@ -218,11 +250,126 @@ func (a *Adapter) viewReservationCallback(ctx context.Context, b *bot.Bot, updat
 
 	photo := &models.InputFileString{Data: reservation.ImageURL}
 
+	var rows [][]models.InlineKeyboardButton
+	if reservation.Status == "confirmed" {
+		btnCancel := models.InlineKeyboardButton{
+			Text:         "Отменить бронирование ❌",
+			CallbackData: fmt.Sprintf("cancel_resv_%s", reservation.UUID),
+		}
+		rows = append(rows, []models.InlineKeyboardButton{btnCancel})
+	}
+	btnBack := models.InlineKeyboardButton{
+		Text:         "⬅️ Назад",
+		CallbackData: "my_reservations_back",
+	}
+	rows = append(rows, []models.InlineKeyboardButton{btnBack})
+
 	_, err = b.SendPhoto(ctx, &bot.SendPhotoParams{
 		ChatID:    tgID,
 		Photo:     photo,
 		Caption:   msg,
 		ParseMode: "Markdown",
+		ReplyMarkup: &models.InlineKeyboardMarkup{
+			InlineKeyboard: rows,
+		},
+	})
+	if err != nil {
+		a.logger.Error(err.Error())
+		return
+	}
+
+	_, err = a.bot.DeleteMessage(ctx, &bot.DeleteMessageParams{
+		ChatID:    tgID,
+		MessageID: q.Message.Message.ID,
+	})
+	if err != nil {
+		a.logger.Error(err.Error())
+	}
+}
+
+func (a *Adapter) cancelReservationCallback(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update.CallbackQuery == nil {
+		return
+	}
+	q := update.CallbackQuery
+
+	uuid := strings.TrimPrefix(q.Data, "cancel_resv_")
+	tgID := q.Message.Message.Chat.ID
+
+	reservation, err := a.reservationSvc.GetDetailsByUUID(ctx, tgID, uuid)
+	if err != nil {
+		_, err = b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+			CallbackQueryID: q.ID,
+			Text:            "⚠ Бронирование не найдено.",
+			ShowAlert:       true,
+		})
+		if err != nil {
+			a.logger.Error(err.Error())
+		}
+		return
+	}
+
+	msg := fmt.Sprintf(
+		"🏠 Дом: %s\n"+
+			"📅 %s → %s\n"+
+			"👥 %d гостей\n"+
+			"💳 Стоимость проживания: %d₽\n"+
+			"ℹ️ Статус: Отменено ❌\n",
+		reservation.HouseName,
+		reservation.CheckIn.Format("02.01.2006"),
+		reservation.CheckOut.Format("02.01.2006"),
+		reservation.GuestsCount,
+		reservation.TotalPrice,
+	)
+
+	if len(reservation.Bathhouse) > 0 {
+		msg += "\n🔥 *Забронированы дополнительно*:\n"
+		for _, bath := range reservation.Bathhouse {
+			fillOpt := ""
+			if bath.FillOptionName != nil {
+				fillOpt = "(" + *bath.FillOptionName + ")"
+			}
+			msg += fmt.Sprintf("• %s: %s с %s до %s %s\n", bath.Name, bath.Date, bath.TimeFrom, bath.TimeTo, fillOpt)
+		}
+	}
+
+	err = a.reservationSvc.Cancel(ctx, tgID, uuid)
+	if err != nil {
+		_, err = b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+			CallbackQueryID: q.ID,
+			Text:            "⚠️Не удалось отменить бронирование. Попробуйте позже.",
+			ShowAlert:       true,
+		})
+		if err != nil {
+			a.logger.Error(err.Error())
+		}
+		return
+	}
+
+	_, err = b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+		CallbackQueryID: q.ID,
+		Text:            "Ваше бронирование отменено!",
+		ShowAlert:       true,
+	})
+	if err != nil {
+		a.logger.Error(err.Error())
+	}
+
+	_, err = b.EditMessageCaption(ctx, &bot.EditMessageCaptionParams{
+		ChatID:    tgID,
+		MessageID: q.Message.Message.ID,
+		Caption:   msg,
+		ParseMode: "Markdown",
+		ReplyMarkup: &models.InlineKeyboardMarkup{
+			InlineKeyboard: [][]models.InlineKeyboardButton{
+				{
+					{
+						Text:         "⬅️ Назад",
+						CallbackData: "my_reservations_back",
+					},
+				},
+			},
+		},
 	})
 	if err != nil {
 		a.logger.Error(err.Error())

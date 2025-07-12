@@ -12,4 +12,5 @@ type IReservations interface {
 	Create(ctx context.Context, reservation entities.Reservation) error
 	GetDetailsByUUID(ctx context.Context, telegramID int64, uuid string) (entities.ReservationMessage, error)
 	GetByTelegramID(ctx context.Context, telegramID int64) ([]entities.ReservationMessage, error)
+	Cancel(ctx context.Context, userTgId int64, reservationUUID string) error
 }
