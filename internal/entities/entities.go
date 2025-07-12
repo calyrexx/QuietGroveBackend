@@ -65,7 +65,7 @@ type (
 	}
 
 	ReservationCreatedMessage struct {
-		House       string
+		HouseName   string
 		GuestName   string
 		GuestPhone  string
 		CheckIn     time.Time // [checkIn, checkOut)

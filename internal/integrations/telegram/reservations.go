@@ -20,7 +20,7 @@ func (a *Adapter) ReservationCreatedForAdmin(msg entities.ReservationCreatedMess
 			"📅 %s → %s\n"+
 			"👥 %d гостей\n"+
 			"💳 %d ₽\n",
-		msg.House, msg.GuestName, msg.GuestPhone,
+		msg.HouseName, msg.GuestName, msg.GuestPhone,
 		msg.CheckIn.Format("02.01.2006"), msg.CheckOut.Format("02.01.2006"),
 		msg.GuestsCount, msg.TotalPrice,
 	)
@@ -68,7 +68,7 @@ func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessa
 			"👥 %d гостей\n"+
 			"💳 Стоимость проживания: %d ₽\n"+
 			"📞 Наш номер для связи: +79867427283\n",
-		msg.House,
+		msg.HouseName,
 		msg.CheckIn.Format("02.01.2006"), msg.CheckOut.Format("02.01.2006"),
 		msg.GuestsCount, msg.TotalPrice,
 	)
@@ -211,10 +211,14 @@ func (a *Adapter) viewReservationCallback(ctx context.Context, b *bot.Bot, updat
 		return
 	}
 
-	var statusMsg string
+	var (
+		statusMsg string
+		canCancel bool
+	)
 	switch reservation.Status {
 	case "confirmed":
 		statusMsg = "Подтверждено ✅"
+		canCancel = true
 	case "cancelled":
 		statusMsg = "Отменено ❌"
 	case "checked_in":
@@ -250,28 +254,12 @@ func (a *Adapter) viewReservationCallback(ctx context.Context, b *bot.Bot, updat
 
 	photo := &models.InputFileString{Data: reservation.ImageURL}
 
-	var rows [][]models.InlineKeyboardButton
-	if reservation.Status == "confirmed" {
-		btnCancel := models.InlineKeyboardButton{
-			Text:         "Отменить бронирование ❌",
-			CallbackData: fmt.Sprintf("cancel_resv_%s", reservation.UUID),
-		}
-		rows = append(rows, []models.InlineKeyboardButton{btnCancel})
-	}
-	btnBack := models.InlineKeyboardButton{
-		Text:         "⬅️ Назад",
-		CallbackData: "my_reservations_back",
-	}
-	rows = append(rows, []models.InlineKeyboardButton{btnBack})
-
 	_, err = b.SendPhoto(ctx, &bot.SendPhotoParams{
-		ChatID:    tgID,
-		Photo:     photo,
-		Caption:   msg,
-		ParseMode: "Markdown",
-		ReplyMarkup: &models.InlineKeyboardMarkup{
-			InlineKeyboard: rows,
-		},
+		ChatID:      tgID,
+		Photo:       photo,
+		Caption:     msg,
+		ParseMode:   "Markdown",
+		ReplyMarkup: a.buildReservationDetailKeyboard(uuid, canCancel),
 	})
 	if err != nil {
 		a.logger.Error(err.Error())
@@ -356,22 +344,33 @@ func (a *Adapter) cancelReservationCallback(ctx context.Context, b *bot.Bot, upd
 	}
 
 	_, err = b.EditMessageCaption(ctx, &bot.EditMessageCaptionParams{
-		ChatID:    tgID,
-		MessageID: q.Message.Message.ID,
-		Caption:   msg,
-		ParseMode: "Markdown",
-		ReplyMarkup: &models.InlineKeyboardMarkup{
-			InlineKeyboard: [][]models.InlineKeyboardButton{
-				{
-					{
-						Text:         "⬅️ Назад",
-						CallbackData: "my_reservations_back",
-					},
-				},
-			},
-		},
+		ChatID:      tgID,
+		MessageID:   q.Message.Message.ID,
+		Caption:     msg,
+		ParseMode:   "Markdown",
+		ReplyMarkup: a.buildReservationDetailKeyboard(uuid, false),
 	})
 	if err != nil {
 		a.logger.Error(err.Error())
 	}
+}
+
+func (a *Adapter) buildReservationDetailKeyboard(reservationUUID string, canCancel bool) *models.InlineKeyboardMarkup {
+	var rows [][]models.InlineKeyboardButton
+
+	if canCancel {
+		rows = append(rows, []models.InlineKeyboardButton{
+			{
+				Text:         "Отменить бронирование ❌",
+				CallbackData: fmt.Sprintf("cancel_resv_%s", reservationUUID),
+			},
+		})
+	}
+	rows = append(rows, []models.InlineKeyboardButton{
+		{
+			Text:         "⬅️ Назад",
+			CallbackData: "my_reservations_back",
+		},
+	})
+	return &models.InlineKeyboardMarkup{InlineKeyboard: rows}
 }

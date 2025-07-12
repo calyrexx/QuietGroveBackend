@@ -173,7 +173,7 @@ func (u *Reservation) CreateReservation(ctx context.Context, req CreateReservati
 		}
 
 		reservationMsg := entities.ReservationCreatedMessage{
-			House:       house.Name,
+			HouseName:   house.Name,
 			GuestName:   guest.Name,
 			GuestPhone:  guest.Phone,
 			CheckIn:     res.CheckIn,
