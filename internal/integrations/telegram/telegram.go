@@ -71,6 +71,20 @@ func (a *Adapter) RegisterHandlers(ver *usecases.Verification, res *usecases.Res
 	)
 
 	a.bot.RegisterHandler(
+		bot.HandlerTypeCallbackQueryData,
+		"cancel_resv_",
+		bot.MatchTypePrefix,
+		a.cancelReservationCallback,
+	)
+
+	a.bot.RegisterHandler(
+		bot.HandlerTypeCallbackQueryData,
+		"my_reservations_back",
+		bot.MatchTypeExact,
+		a.myReservationsHandler,
+	)
+
+	a.bot.RegisterHandler(
 		bot.HandlerTypeMessageText,
 		"/start",
 		bot.MatchTypeExact,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/calyrexx/zeroslog"
 	"github.com/robfig/cron/v3"
-	"log"
 	"log/slog"
 )
 
@@ -37,8 +36,10 @@ func NewAppCron(logger *slog.Logger) (*AppCron, error) {
 	}, nil
 }
 
-func (c *AppCron) Add(spec string, fn cronFunc) {
-	c.fns = append(c.fns, specFn{spec, fn})
+func (c *AppCron) Add(spec []string, fn cronFunc) {
+	for _, sp := range spec {
+		c.fns = append(c.fns, specFn{sp, fn})
+	}
 }
 
 func (c *AppCron) AddOnStart(fn cronFunc) {
@@ -51,7 +52,7 @@ func (c *AppCron) Start(ctx context.Context) error {
 		f, err := c.cron.AddFunc(spec, func() {
 			err := fn(ctx)
 			if err != nil {
-				log.Print(err.Error())
+				c.logger.Error(err.Error())
 			}
 		})
 		if err != nil {
@@ -60,17 +61,18 @@ func (c *AppCron) Start(ctx context.Context) error {
 		c.cron.Entry(f)
 	}
 
+	c.logger.Info("AppCron has been started!")
+
 	for _, fn := range c.fnsOnStart {
 		err := fn(ctx)
 		if err != nil {
-			log.Print(err.Error())
+			c.logger.Error(err.Error())
 		}
 	}
 
 	c.cron.Start()
 	defer c.cron.Stop()
 
-	c.logger.Info("AppCron has been started!")
 	<-ctx.Done()
 	return nil
 }

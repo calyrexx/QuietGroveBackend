@@ -8,42 +8,64 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Logger            *Logger            `yaml:"Logger"`
-	WebServer         *HttpServer        `yaml:"WebServer"`
-	PriceCoefficients []PriceCoefficient `yaml:"PriceCoefficients"`
-	Version           string
-}
+type (
+	Config struct {
+		Logger       *Logger       `yaml:"Logger"`
+		WebServer    *HttpServer   `yaml:"WebServer"`
+		AppCron      *AppCron      `yaml:"AppCron"`
+		Reservations *Reservations `yaml:"Reservations"`
+		Version      string
+	}
 
-type Logger struct {
-	Level slog.Level `yaml:"Level"`
-}
+	AppCron struct {
+		UpdateReservationsStatuses CronConfig
+		GetForReminder             CronConfig
+	}
 
-type PriceCoefficient struct {
-	Start time.Time
-	End   time.Time
-	Rate  float64
-}
+	CronConfig struct {
+		Spec []string
+	}
 
-type PriceCoefficientTemp struct {
-	Start string
-	End   string
-	Rate  float64
-}
+	Logger struct {
+		Level slog.Level `yaml:"Level"`
+	}
 
-type HttpServer struct {
-	Port              string
-	ReadTimeout       time.Duration
-	WriteTimeout      time.Duration
-	ShutdownTimeout   time.Duration
-	ReadHeaderTimeout time.Duration
-	IdleTimeout       time.Duration
-	MaxHeaderBytes    int
-}
+	Reservations struct {
+		PriceCoefficients     []PriceCoefficient
+		NotificationThreshold int
+	}
+
+	PriceCoefficient struct {
+		Start time.Time
+		End   time.Time
+		Rate  float64
+	}
+
+	PriceCoefficientTemp struct {
+		Start string
+		End   string
+		Rate  float64
+	}
+
+	HttpServer struct {
+		Port              string
+		ReadTimeout       time.Duration
+		WriteTimeout      time.Duration
+		ShutdownTimeout   time.Duration
+		ReadHeaderTimeout time.Duration
+		IdleTimeout       time.Duration
+		MaxHeaderBytes    int
+	}
+)
 
 func NewConfig() (*Config, error) {
-	var conf Config
-	var priceCoefficientsTemp []PriceCoefficientTemp
+	var (
+		conf Config
+		temp struct {
+			NotificationThreshold int
+			PriceCoefficients     []PriceCoefficientTemp
+		}
+	)
 
 	viperNew := viper.New()
 
@@ -64,17 +86,25 @@ func NewConfig() (*Config, error) {
 		return nil, errorspkg.NewErrReadConfigViper("HttpServer", err)
 	}
 
-	err = viperNew.UnmarshalKey("PriceCoefficients", &priceCoefficientsTemp)
+	err = viperNew.UnmarshalKey("AppCron", &conf.AppCron)
+	if err != nil {
+		return nil, errorspkg.NewErrReadConfigViper("AppCron", err)
+	}
+
+	err = viperNew.UnmarshalKey("Reservations", &temp)
 	if err != nil {
 		return nil, errorspkg.NewErrReadConfigViper("PriceCoefficients", err)
 	}
 
-	pc, err := parseDate(priceCoefficientsTemp)
+	pc, err := parseDate(temp.PriceCoefficients)
 	if err != nil {
 		return nil, errorspkg.NewErrReadConfigViper("PriceCoefficients", err)
 	}
 
-	conf.PriceCoefficients = pc
+	conf.Reservations = &Reservations{
+		NotificationThreshold: temp.NotificationThreshold,
+		PriceCoefficients:     pc,
+	}
 
 	return &conf, nil
 }
