@@ -18,20 +18,21 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	config, err := configuration.NewConfig()
+	if err != nil {
+		println("newConfig initialization failed. error =", err.Error())
+		return
+	}
+	config.Version = Version
+
 	logger := slog.New(zeroslog.New(
 		zeroslog.WithOutput(os.Stderr),
 		zeroslog.WithColors(),
+		zeroslog.WithMinLevel(config.Logger.Level),
 		zeroslog.WithTimeFormat("2006-01-02 15:04:05.000 -07:00"),
 	))
 
 	logger.Info("Starting app...", "version", Version)
-
-	config, err := configuration.NewConfig()
-	if err != nil {
-		logger.Error("newConfig initialization failed", zeroslog.ErrorKey, err)
-		return
-	}
-	config.Version = Version
 
 	creds, err := configuration.NewCredentials()
 	if err != nil {

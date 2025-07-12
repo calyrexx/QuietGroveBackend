@@ -6,6 +6,7 @@ import (
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
@@ -376,4 +377,110 @@ func (r *ReservationsRepo) GetDetailsByUUID(ctx context.Context, telegramID int6
 	res.Bathhouse = baths
 
 	return res, nil
+}
+
+func (r *ReservationsRepo) GetAllConfirmed(ctx context.Context) ([]entities.ReservationUpdateStatus, error) {
+	const method = "reservationsRepo.GetAllConfirmed"
+
+	query := `
+		SELECT
+			uuid,
+			LOWER(stay) AS check_in,
+			UPPER(stay) AS check_out,
+			status
+		FROM reservations
+		WHERE status = 'confirmed'
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("Query", method, err)
+	}
+	defer rows.Close()
+
+	var result []entities.ReservationUpdateStatus
+	for rows.Next() {
+		var res entities.ReservationUpdateStatus
+		if err = rows.Scan(
+			&res.UUID,
+			&res.CheckIn,
+			&res.CheckOut,
+			&res.Status,
+		); err != nil {
+			return nil, errorspkg.NewErrRepoFailed("Scan", method, err)
+		}
+		result = append(result, res)
+	}
+	return result, nil
+}
+
+func (r *ReservationsRepo) UpdateStatuses(ctx context.Context, reservations []entities.ReservationUpdateStatus) error {
+	const method = "reservationsRepo.UpdateStatuses"
+	updateBatch := &pgx.Batch{}
+	query := `
+		UPDATE reservations 
+		SET 
+		    status = $1,
+			updated_at = NOW()
+		WHERE uuid = $2
+	`
+
+	for _, reservation := range reservations {
+		updateBatch.Queue(query, reservation.Status, reservation.UUID)
+	}
+
+	br := r.pool.SendBatch(ctx, updateBatch)
+	defer br.Close()
+
+	for i := 0; i < updateBatch.Len(); i++ {
+		_, err := br.Exec()
+		if err != nil {
+			return errorspkg.NewErrRepoFailed("br.Exec", method, err)
+		}
+	}
+
+	if err := br.Close(); err != nil {
+		return errorspkg.NewErrRepoFailed("br.Close", method, err)
+	}
+
+	return nil
+}
+
+func (r *ReservationsRepo) GetAllForReminder(ctx context.Context) ([]entities.ReservationReminderNotification, error) {
+	const method = "reservationsRepo.GetAllForReminder"
+
+	query := `
+		SELECT
+			r.uuid,
+			h.name AS house_name,
+			LOWER(r.stay) AS check_in,
+			UPPER(r.stay) AS check_out,
+			g.tg_user_id
+		FROM reservations r
+		JOIN guests g ON r.guest_uuid = g.uuid
+		JOIN houses h ON r.house_id = h.id
+		WHERE r.status = 'confirmed'
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, errorspkg.NewErrRepoFailed("Query", method, err)
+	}
+	defer rows.Close()
+
+	var result []entities.ReservationReminderNotification
+	for rows.Next() {
+		var res entities.ReservationReminderNotification
+		if err = rows.Scan(
+			&res.UUID,
+			&res.HouseName,
+			&res.CheckIn,
+			&res.CheckOut,
+			&res.UserTgID,
+		); err != nil {
+			return nil, errorspkg.NewErrRepoFailed("Scan", method, err)
+		}
+		result = append(result, res)
+	}
+	return result, nil
 }

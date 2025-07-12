@@ -44,6 +44,21 @@ type (
 		Bathhouse   []BathhouseReservation
 	}
 
+	ReservationUpdateStatus struct {
+		UUID     uuid.UUID
+		CheckIn  time.Time // [checkIn, checkOut)
+		CheckOut time.Time
+		Status   string
+	}
+
+	ReservationReminderNotification struct {
+		UUID      uuid.UUID
+		HouseName string
+		CheckIn   time.Time
+		CheckOut  time.Time
+		UserTgID  int64
+	}
+
 	ReservationMessage struct {
 		UUID        string
 		HouseName   string

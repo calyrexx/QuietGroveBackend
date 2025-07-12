@@ -29,7 +29,7 @@ func NewUsecases(
 		GuestRepo:       repo.Guests,
 		HouseRepo:       repo.Houses,
 		BathhouseRepo:   repo.Bathhouses,
-		PCoefs:          config.PriceCoefficients,
+		Config:          config.Reservations,
 		Logger:          logger,
 		Notifier:        tgBot,
 	})

@@ -69,6 +69,9 @@ func New(
 		return nil, err
 	}
 
+	appCron.Add(config.AppCron.UpdateReservationsStatuses.Spec, usecases.reservations.UpdateStatuses)
+	appCron.Add(config.AppCron.GetForReminder.Spec, usecases.reservations.GetForReminder)
+
 	return &App{
 		repo:        repo,
 		rest:        restServer,

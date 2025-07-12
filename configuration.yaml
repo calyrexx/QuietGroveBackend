@@ -1,10 +1,6 @@
 Logger:
-  # Уровень выводимых в консоль сообщений [0 - PanicLevel, 1 - FatalLevel, 2 - ErrorLevel, 3 - WarnLevel, 4 - InfoLevel, 5 - DebugLevel, 6 - TraceLevel]
-  Level: 6
+  Level: 0
 
-# =======================
-#   WebServer settings
-# =======================
 HttpServer:
   Port: 8080
   ReadTimeout: 10s
@@ -14,10 +10,20 @@ HttpServer:
   MaxHeaderBytes: 500
   ShutdownTimeout: 5s
 
-PriceCoefficients:
-  - Start: "2023-12-29"
-    End: "2024-01-07"
-    Rate: 1.2
-  - Start: "2024-05-01"
-    End: "2024-05-10"
-    Rate: 1.3
+Reservations:
+  NotificationThreshold: 3
+  PriceCoefficients:
+    - Start: "2023-12-29"
+      End: "2024-01-07"
+      Rate: 1.2
+    - Start: "2024-05-01"
+      End: "2024-05-10"
+      Rate: 1.3
+
+AppCron:
+  UpdateReservationsStatuses:
+    Spec:
+      - "30 * * * * *"
+  GetForReminder:
+    Spec:
+      - "0 0 12 * * *"

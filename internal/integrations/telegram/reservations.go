@@ -104,6 +104,41 @@ func (a *Adapter) ReservationCreatedForUser(msg entities.ReservationCreatedMessa
 	return nil
 }
 
+func (a *Adapter) RemindUser(msg []entities.ReservationReminderNotification) error {
+	ctx := context.Background()
+
+	for _, m := range msg {
+		text := fmt.Sprintf(
+			"Уважаемый гость!\n"+
+				"Ваше бронирование домика *%s* скоро начнётся!",
+			m.HouseName,
+		)
+
+		_, err := a.bot.SendMessage(ctx,
+			&bot.SendMessageParams{
+				ChatID:    m.UserTgID,
+				Text:      text,
+				ParseMode: "Markdown",
+				ReplyMarkup: &models.InlineKeyboardMarkup{
+					InlineKeyboard: [][]models.InlineKeyboardButton{
+						{
+							{
+								Text:         "Просмотреть бронирование 👀",
+								CallbackData: fmt.Sprintf("view_resv_%s", m.UUID),
+							},
+						},
+					},
+				},
+			},
+		)
+		if err != nil {
+			a.logger.Error(err.Error())
+		}
+	}
+
+	return nil
+}
+
 func (a *Adapter) myReservationsHandler(ctx context.Context, b *bot.Bot, u *models.Update) {
 	var (
 		tgID                  int64
@@ -223,7 +258,7 @@ func (a *Adapter) viewReservationCallback(ctx context.Context, b *bot.Bot, updat
 		statusMsg = "Отменено ❌"
 	case "checked_in":
 		statusMsg = "В процессе ▶"
-	case "check_out":
+	case "checked_out":
 		statusMsg = "Завершено ✅"
 	}
 

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 	"github.com/calyrexx/QuietGrooveBackend/internal/configuration"
 	"github.com/calyrexx/QuietGrooveBackend/internal/entities"
 	"github.com/calyrexx/QuietGrooveBackend/internal/pkg/errorspkg"
@@ -11,12 +12,20 @@ import (
 	"time"
 )
 
-const reservationConfirmed = "confirmed"
+const (
+	reservationConfirmed  = "confirmed"
+	reservationCheckedIn  = "checked_in"
+	reservationCheckedOut = "checked_out"
+	barnhouseImg          = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237710/houses1_ebawfo.webp"
+	cottageImg            = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237737/houses8_pbv273.jpg"
+	glampingImg           = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237765/houses15_djgvjf.webp"
+)
 
 type (
 	Notifier interface {
 		ReservationCreatedForAdmin(res entities.ReservationCreatedMessage) error
 		ReservationCreatedForUser(res entities.ReservationCreatedMessage, tgID int64) error
+		RemindUser(msg []entities.ReservationReminderNotification) error
 	}
 
 	ReservationDependencies struct {
@@ -24,7 +33,7 @@ type (
 		GuestRepo       repository.IGuests
 		HouseRepo       repository.IHouses
 		BathhouseRepo   repository.IBathhouses
-		PCoefs          []configuration.PriceCoefficient
+		Config          *configuration.Reservations
 		Logger          *slog.Logger
 		Notifier        Notifier
 	}
@@ -34,33 +43,34 @@ type (
 		guestRepo       repository.IGuests
 		houseRepo       repository.IHouses
 		bathhouseRepo   repository.IBathhouses
-		pCoefs          []configuration.PriceCoefficient
+		config          *configuration.Reservations
 		logger          *slog.Logger
 		notifier        Notifier
 	}
 )
 
 func NewReservation(d *ReservationDependencies) (*Reservation, error) {
+	const method = "usecases.NewReservation"
 	if d == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "whole", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "whole", "nil")
 	}
 	if d.ReservationRepo == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "ReservationRepo", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "ReservationRepo", "nil")
 	}
 	if d.GuestRepo == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "GuestRepo", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "GuestRepo", "nil")
 	}
 	if d.HouseRepo == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "HouseRepo", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "HouseRepo", "nil")
 	}
 	if d.BathhouseRepo == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "BathhouseRepo", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "BathhouseRepo", "nil")
 	}
-	if d.PCoefs == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "PCoefs", "nil")
+	if d.Config == nil {
+		return nil, errorspkg.NewErrConstructorDependencies(method, "Config", "nil")
 	}
 	if d.Notifier == nil {
-		return nil, errorspkg.NewErrConstructorDependencies("Usecases Reservation", "Notifier", "nil")
+		return nil, errorspkg.NewErrConstructorDependencies(method, "Notifier", "nil")
 	}
 
 	logger := d.Logger.With(zeroslog.UsecaseKey, "Reservation")
@@ -70,7 +80,7 @@ func NewReservation(d *ReservationDependencies) (*Reservation, error) {
 		guestRepo:       d.GuestRepo,
 		houseRepo:       d.HouseRepo,
 		bathhouseRepo:   d.BathhouseRepo,
-		pCoefs:          d.PCoefs,
+		config:          d.Config,
 		logger:          logger,
 		notifier:        d.Notifier,
 	}, nil
@@ -210,14 +220,83 @@ func (u *Reservation) GetDetailsByUUID(ctx context.Context, userTgID int64, uuid
 
 	switch res.HouseName {
 	case "Барнхаус":
-		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237710/houses1_ebawfo.webp"
+		res.ImageURL = barnhouseImg
 	case "Коттедж":
-		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237737/houses8_pbv273.jpg"
+		res.ImageURL = cottageImg
 	case "Глэмпинг":
-		res.ImageURL = "https://res.cloudinary.com/dxmp5yjmb/image/upload/v1747237765/houses15_djgvjf.webp"
+		res.ImageURL = glampingImg
 	}
 
 	return res, nil
+}
+
+func (u *Reservation) GetForReminder(ctx context.Context) error {
+	const method = "GetForReminder"
+	u.logger.Info("starting remind users", "method", method)
+	timeNow := time.Now()
+
+	reservations, err := u.reservationRepo.GetAllForReminder(ctx)
+	if err != nil {
+		return err
+	}
+
+	notificationDate := timeNow.AddDate(0, 0, u.config.NotificationThreshold)
+
+	reservationsToRemind := make([]entities.ReservationReminderNotification, 0, len(reservations))
+	for _, reservation := range reservations {
+		if reservation.CheckIn.Year() == notificationDate.Year() &&
+			reservation.CheckIn.Month() == notificationDate.Month() &&
+			reservation.CheckIn.Day() == notificationDate.Day() {
+			reservationsToRemind = append(reservationsToRemind, reservation)
+		}
+	}
+
+	if err = u.notifier.RemindUser(reservationsToRemind); err != nil {
+		return err
+	}
+
+	if len(reservationsToRemind) > 0 {
+		u.logger.Info(fmt.Sprintf("finished remind users in [%s]", time.Since(timeNow)),
+			"method", method, "reservations", len(reservationsToRemind))
+	}
+
+	return nil
+}
+
+func (u *Reservation) UpdateStatuses(ctx context.Context) error {
+	const method = "UpdateStatuses"
+	u.logger.Info("starting update statuses", "method", method)
+	timeNow := time.Now()
+
+	reservations, err := u.reservationRepo.GetAllConfirmed(ctx)
+	if err != nil {
+		return err
+	}
+
+	reservationsToUpdate := make([]entities.ReservationUpdateStatus, 0, len(reservations))
+	for _, reservation := range reservations {
+		switch {
+		case reservation.CheckIn.Before(timeNow) || reservation.CheckIn.Equal(timeNow):
+			if reservation.CheckOut.After(timeNow) {
+				reservation.Status = reservationCheckedIn
+				reservationsToUpdate = append(reservationsToUpdate, reservation)
+			} else if reservation.CheckOut.Before(timeNow) || reservation.CheckOut.Equal(timeNow) {
+				reservation.Status = reservationCheckedOut
+				reservationsToUpdate = append(reservationsToUpdate, reservation)
+			}
+		}
+	}
+
+	if err = u.reservationRepo.UpdateStatuses(ctx, reservationsToUpdate); err != nil {
+		return err
+	}
+
+	if len(reservationsToUpdate) > 0 {
+		u.logger.Info(fmt.Sprintf("finished update statuses in [%s]", time.Since(timeNow)),
+			"method", method, "reservations", len(reservationsToUpdate))
+	}
+
+	return nil
 }
 
 func (u *Reservation) Cancel(ctx context.Context, userTgID int64, uuid string) error {
@@ -232,7 +311,7 @@ func (u *Reservation) calculateTotalPrice(basePrice, extrasPrice int, checkIn, c
 		currentDate := checkIn.AddDate(0, 0, i)
 		coefficient := 1.0
 
-		for _, pc := range u.pCoefs {
+		for _, pc := range u.config.PriceCoefficients {
 			if (currentDate.Equal(pc.Start) || currentDate.After(pc.Start)) &&
 				(currentDate.Before(pc.End) || currentDate.Equal(pc.End)) {
 				if pc.Rate > coefficient {
